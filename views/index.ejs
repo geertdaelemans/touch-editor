@@ -1,0 +1,251 @@
+    <div id="wrapper">
+
+        <%- include('./partials/sidebar-left.ejs') %>
+
+        <!-- Sidebar Right -->
+        <div id="sidebar-right">
+            <div id="projectInfo" class="parameters">
+                <h2 id="projectToggle" class="toggle">Project</h2>
+                <div id="projectForm">
+                    <div>
+                        <label for="projectName">Naam</label><br />
+                        <input type="text" id="projectName" class="textField" />
+                    </div>
+                    <div>
+                        <label for="canvasWidth">Resolutie</label><br />
+                        <input type="number" id="canvasWidth" class="numberField" />&nbsp;x&nbsp;
+                        <input type="number" id="canvasHeight" class="numberField" />
+                    </div>
+                    <div>
+                        <label for="transitionSpeed">Snelheid wipe</label><br />
+                        <input type="number" id="transitionSpeed" class="numberField" min="0.1" step="0.1" />&nbsp;seconden
+                    </div>
+                    <div>
+                        <label for="private">Privaat</label><br />
+                        <input id="private" type="checkbox" />
+                    </div>
+                    <div id="buttonWrapper">
+                        <button id="saveSettings" type="button"><i class="fas fa-save"></i>&nbsp;Bewaar</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pageInfo" class="parameters">
+                <h2 id="paginaToggle" class="toggle">Pagina</h2>
+                <div id="paginaForm">
+                    <div>
+                        <label for="id">Naam</label>
+                        <input type="text" id="id" class="textField" />
+                    </div>
+                    <div>
+                        <label for="backgroundSelector">Achtergrond</label><br />
+                        <img id="backgroundSelector" />
+                    </div>
+                    <div>
+                        <label for="html">HTML</label>
+                        <input type="text" id="html" class="textField" />
+                    </div>
+                    <div>
+                        <label for="template">Template</label><br />
+                        <select id="template"></select>
+                    </div>
+                    <div>
+                        <label for="backSelector">Swipe links</label><br />
+                        <select id="backSelector"></select>
+                    </div>
+                    <div>
+                        <label for="nextSelector">Swipe rechts</label><br />
+                        <select id="nextSelector"></select>
+                    </div>
+                    <div>
+                        <label for="downSelector">Swipe omhoog</label><br />
+                        <select id="downSelector"></select>
+                    </div>
+                    <div>
+                        <label for="upSelector">Swipe omlaag</label><br />
+                        <select id="upSelector"></select>
+                    </div>
+                    <div>
+                        <label for="clickSelector">Click</label><br />
+                        <select id="clickSelector"></select>
+                    </div>
+                    <div>
+                        <label for="annotate">Annoteer</label><br />
+                        <select id="annotate"></select>
+                    </div>
+                    <div>
+                        <label for="assets">Assets</label><br>
+                        <select id="assets"></select>
+                    </div>
+                </div>
+            </div>
+            <div id="fieldsInfo" class="parameters">
+                <h2 id="fieldsToggle" class="toggle">Velden</h2>
+                <div id="fieldsForm"></div>
+            </div>
+            <div id="assetInfo" class="parameters">
+                <h2 id="assetToggle" class="toggle">Asset</h2>
+                <div id="assetForm">
+                    <div>
+                        <label for="assetId">Naam</label>
+                        <input type="text" id="assetId" class="textField" />
+                    </div>
+                    <div>
+                        <label for="imgSelector">Afbeelding/Video</label><br />
+                        <img id="imgSelector" />
+                    </div>
+                    <div id="keyframesContainer">
+                        <label for="keyframes">Keyframes</label>
+                        <input type="text" id="keyframes" class="textField" style="float:left" />
+                    </div>
+                    <div id="loopContainer">
+                        <label for="loop">Loop</label><br />
+                        <input id="loop" type="checkbox" />
+                    </div>                                
+                    <div>
+                        <label for="xpos">X</label><br />
+                        <input type="number" id="xpos" class="numberField" />
+                        <div id="xSlider" class="slider"></div>
+                    </div>
+                    <div>
+                        <label for="ypos">Y</label><br />
+                        <input type="number" id="ypos" class="numberField" />
+                        <div id="ySlider" class="slider"></div>
+                    </div>
+                    <div>
+                        <label for="scale">Schaal</label><br />
+                        <input type="number" id="scale" class="numberField" />
+                        <div id="scaleSlider" class="slider"></div>
+                    </div>
+                    <div>
+                        <label for="zoom">Inzoombaar</label><br />
+                        <input type="checkbox" id="zoom">
+                    </div>
+                    <div>
+                        <label for="urlSelector">Link</label><br />
+                        <select id="urlSelector"></select>
+                    </div>
+                    <div>
+                        <label for="transition">Overgang</label><br />
+                        <select id="transition"></select>
+                    </div>
+                    <div>
+                        <div id="deleteAsset" style="margin-top: 10px;"><i class="fa fa-2x fa-trash" aria-hidden="true" title="Verwijder actieve asset."></i></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- /#sidebar-right -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+
+                <div class="tabs-main-content">
+
+                    <!-- Begins tab-projects -->
+                    <div id="tab-projects" class="tab-content">
+                        <div class="main-content">
+                            <div id="projects"></div>
+                            <div id="privateLabel" style="clear:both;"><h2>Private projecten</h2></div>
+                            <div id="privateProjects"></div>
+                        </div>
+                    </div>
+
+                    <!-- Begins tab-viewer -->
+                    <div id="tab-viewer" class="tab-content">
+                        <div class="main-content">
+                            <div id="zoomContainer">
+                                <div id="zoomSlider" class="slider"></div>
+                                <div id="zoomValue"></div>
+                            </div>
+                            <div id="swipe_down"><p>Swipe</p></div>
+                            <div class="row">
+                                <div id="swipe_back"><p>Swipe</p></div>
+                                <div id="screenshotArea">
+                                    <canvas id="canvas"></canvas>
+                                    <iframe id="canvasHtml"></iframe>
+                                </div>
+                                <div id="swipe_next"><p>Swipe</p></div>                            
+                            </div>
+                            <div id="swipe_up"><p>Swipe</p></div>
+                            <div id="videoControl">
+                                <div id="panel">
+                                    <div id="deleteAllKeyFrames" class="keyFrameButton" title="Verwijder alle keyframes en reset in- en uit-punt."><i class="fas fas fa-trash-alt"></i></div>
+                                    <div>&nbsp;</div>
+                                    <div id="video_fastbackward" class="keyFrameButton" title="Spring frame achteruit."><i class="fas fa-fast-backward"></i></div>
+                                    <div id="video_fastforward" class="keyFrameButton" title="Spring frame vooruit."><i class="fas fa-fast-forward"></i></div>
+                                    <div>&nbsp;</div>
+                                    <div id="video_previous" class="keyFrameButton" title="Spring naar vorig keyframe."><i id="playPrevious" class="fas fa-step-backward"></i></div>
+                                    <div id="video_play" class="keyFrameButton" title="Speel af tot volgend keyframe."><i id="playPauseButton" class="fas fa-pause"></i></div>
+                                    <div id="video_next" class="keyFrameButton" title="Spring naar volgend keyframe."><i id="playNext" class="fas fa-step-forward"></i></div>
+                                    <div>&nbsp;</div>
+                                    <div id="keyframe_insert" class="keyFrameButton" title="Voeg keyframe toe of verwijder geselecteerd keyframe."><i id="addKeyFrameButton" class="fas fa-plus"></i></div>
+                                    <div>&nbsp;</div>
+                                    <div id="videoSlider"></div>
+                                    <div>&nbsp;</div>
+                                    <div id="video_timer" class="keyFrameCounter">00:00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Begins tab-templates -->
+                    <div id="tab-templates" class="tab-content">
+                        <div class="main-content">
+                            <div id="templates">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Begins tab-media -->
+                    <div id="tab-media" class="tab-content">
+                        <div class="main-content">
+                            <div id="media">
+                            </div>
+                        </div>
+                        <ul id="mediaPopup" class="custom-menu">
+                        </ul>
+                    </div>
+
+                    <!-- Begins tab-network -->
+                    <div id="tab-network" class="tab-content">
+                        <div id="pageNetwork"></div>
+                    </div>
+
+                    <!-- Begins tab-xml -->
+                    <div id="tab-xml" class="tab-content">
+                        <div class="main-content">
+                            <button id="xmlViewButton">XML</button>
+                            <button id="jsonViewButton">JSON</button>
+                        </div>
+                        <div id="xml-area" class="codeEditors main-content">
+                            <textarea id="xmlView" class="xmlViewer"></textarea><br />
+                            <button id="saveXml" type="button"><i class="fas fa-save"></i>&nbsp;Bewaar XML</button>
+                        </div>
+                        <div id="json-area" class="codeEditors main-content" style="display:none">
+                            <textarea id="jsonView" class="xmlViewer"></textarea><br />
+                        </div>
+                    </div>
+
+                    <div style="clear:both;"></div>
+                </div><!-- # tabs-main-content -->
+
+                <div style="clear:both;"></div>
+                <div id="editView">
+                    <ul id="pages">
+                    </ul>
+                </div>
+
+                <ul class="custom-menu" id="popup">
+                </ul>
+            </div> <!-- /.container-fluid -->
+        </div> <!-- /.page-content-wrapper -->
+        <div id="dialog-message" class="message" title="Boodschap">
+            <div id="message">
+            </div>
+        </div>
+    </div> <!-- /#wrapper -->
+
+    <div id="userId" style="display: none;"><%= username %></div>
+    <script src="/js/scripts.js" type="module"></script>
+    

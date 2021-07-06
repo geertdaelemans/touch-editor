@@ -1,0 +1,25 @@
+body {
+    font-family: $font-main;
+    background-image: linear-gradient(#adadad, #414141);
+    background-attachment: fixed;
+    overflow-x: hidden;
+}
+
+a {
+    color: $color-link;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: $font-highlight;
+    color: $color-highlight;
+}
+
+input[type=checkbox] {
+  transform: scale(2);
+  margin: 5px;
+}

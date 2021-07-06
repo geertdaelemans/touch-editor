@@ -1,0 +1,32 @@
+    <!-- Source: https://www.youtube.com/watch?v=93QK-byrx9k -->
+    <div class="modal-dialog text-center">
+        <div class="col-sm-8 main-section">
+            <div class="modal-content">
+
+                <div class="col-12 user-img">
+                    <img src="img/vrt-touch-logo-small.png" />
+                </div>
+
+                <form class="col-12" action="/login" method="POST">
+                    <div class="form-group user">
+                        <input type="email" id="email" name="username" required class="form-control" placeholder="Voer e-mail in" />
+                    </div>
+                    <div class="form-group password">
+                        <input type="password" id="password" name="password" required class="form-control" placeholder="Voer paswoord in" />
+                    </div>
+                    <div class="help-block message">
+                        <% if (messages.error) { %>
+                            <%= messages.error %>
+                        <% } %>
+                        </div>
+                    <div class="button-box">
+                        <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i>Login</button>
+                    </div>
+                </form>
+
+            </div> <!-- End of Modal Content -->
+        </div>
+    </div>
+    <script>
+        $('#menu-bar').hide();
+    </script>

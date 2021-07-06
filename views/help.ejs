@@ -1,0 +1,73 @@
+<div id="wrapper">
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+        <div class="container-fluid">
+
+            <div class="tabs-main-content">
+                <div class="plain">
+                    <h1>Overzicht</h1>
+                    <ul>
+                        <li><a href="#panelen">Een kort overzicht van de panelen</a></li>
+                        <li><a href="#viewer">De viewer / editor</a></li>
+                    </ul>
+                    
+                    <h1 id="panelen">Panelen</h1>
+                    <ul>
+                        <li>
+                            <h2>Projecten</h2>
+                            <p>Selecteer hier je presentatie. Dit is ook de plaats waar je de naam en resolutie kan de presentatie kan wijzigen.</p>
+                            <p>Klik op de plus om een nieuwe presentatie aan te maken.</p>
+                        </li>
+                        <li>
+                            <h2>Viewer</h2>
+                            <p>Bekijk en bewerk je presentatie.</p>
+                            <p>Voor meer info zie <a href="#viewer">Viewer / editor</a>.</p>
+                        </li>
+                        <li>
+                            <h2>Media</h2>
+                            <p>Gebruik dit paneel om media (foto, grafiek of video) op te laden.</p>
+                            <p>Klik op de plus om media op te laden. Dit kunnen meerdere bestanden tegelijk zijn (multi-select).</p>
+                            <p>Wens je media te verwijderen, klik dan rechts op de te verwijderen media.</p>
+                        </li>
+                        <li>
+                            <h2>Netwerk</h2>
+                            <p>Dit paneel geeft een visuele weergave van de structuur van je presentatie.</p>
+                            <p>Het rode vierkant geeft de startslide aan.</p>
+                            <p>Blauwe pijlen: te volgen door aanraken van iconen op de pagina.</p>
+                            <p>Rode pijlen: te volgen door naar volgende pagina te swipen (rode draad van de presentatie).</p>
+                            <p>Handig: Via dit overzicht kan je controleren of elke pagina wel bereikbaar is. Indien een viekant niet verbonden is met pijlen, dan betekent dit dat deze pagina niet getoond kan worden.</p>
+                        </li>
+                        <li>
+                            <h2>XML</h2>
+                            <p>Dit is een paneel voor de 'nerd'. Je krijgt een overzicht van de presentatie zoals die naar TouchDesigner wordt gestuurd.</p>
+                            <p>XML: Deze code is aanpasbaar. Let wel op: het is mogelijk je presentatie te verknoeien, dus weet steeds waarmee je bezig bent.</p>
+                            <p>JSON: Deze view is louter informatief. Dit is het datamodel zoals het intern in het systeem gebruikt wordt. Dit geeft tevens een goed beeld van welke informatie beschikbaar is voor externe toepassingen.</p>
+                        </li>
+                        <li>
+                            <h2>Help</h2>
+                            <p>Deze pagina.</p>
+                        </li>
+                    </ul>
+                    <h1 id="viewer">Viewer / Editor</h1>
+                    <h2>Doorheen een presentatie lopen</h2>
+                    <p>Klik met de linkermuisknop op de actieve zones om zo naar andere pagina's te navigeren.</p>
+                    <p>Klik naast de actieve zones om naar de volgende pagina te gaan indien deze werd ingesteld. Is er geen volgende pagina gedefinieerd dan zal er niets gebreuren.</p>
+                </div>
+            </div><!-- # tabs-main-content -->
+
+            <div style="clear:both;"></div>
+            <div id="editView">
+                <ul id="pages">
+                </ul>
+
+           </div>
+            <ul class='custom-menu'>
+            </ul>
+        </div> <!-- /.container-fluid -->
+    </div> <!-- /.page-content-wrapper -->
+
+</div> <!-- /#wrapper -->
+
+<div id="userId" style="display: none;"><%= username %></div>
+<script src="/js/scripts.js" type="text/javascript"></script>

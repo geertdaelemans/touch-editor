@@ -1,0 +1,60 @@
+{
+  "name": "touchscreen",
+  "version": "1.0.0",
+  "description": "Touchscreen editor",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "devStart": "nodemon server.js"
+  },
+  "author": "Geert Daelemans",
+  "license": "ISC",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.13.0",
+    "@popperjs/core": "^2.4.2",
+    "bootstrap": "^4.5.0",
+    "chokidar": "^3.5.2",
+    "ejs": "^3.1.2",
+    "events": "^3.3.0",
+    "express": "^4.17.1",
+    "express-ejs-layouts": "^2.5.0",
+    "express-fileupload": "^1.1.6",
+    "express-flash": "0.0.2",
+    "express-session": "^1.17.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-extra": "^9.0.1",
+    "jquery": "^3.5.1",
+    "jquery-ui-dist": "^1.12.1",
+    "method-override": "^3.0.0",
+    "mongoose": "^5.9.10",
+    "nouislider": "^14.6.4",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^6.0.1",
+    "request": "^2.88.2",
+    "sharp": "^0.25.3",
+    "socket.io": "^2.3.0",
+    "twit": "^2.2.11",
+    "util": "^0.12.2",
+    "vis-network": "^7.6.4",
+    "websocket": "^1.0.33",
+    "wnumb": "^1.2.0",
+    "xml-js": "^1.6.11"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0",
+    "gulp": "^4.0.2",
+    "gulp-nodemon": "^2.5.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-run": "^1.7.1",
+    "gulp-sass": "^4.1.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "nodemon": "^2.0.7"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "public/*"
+    ],
+    "delay": "2500"
+  }
+}

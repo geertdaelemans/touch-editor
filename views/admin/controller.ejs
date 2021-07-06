@@ -1,0 +1,64 @@
+    <div id="wrapper">
+        <%- include('../partials/header.ejs') %>
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="plain">
+                    <div id="touchDesignerStatus"></div>
+                    <button id="reconnectButton">Reset connection</button>
+                    <hr \>
+                    <div id="controlPanel">
+                        <div class="row">
+                            <div class="col">
+                                <div class="row">
+                                    <div class="col">
+                                        <select id="tdProjects"></select>
+                                    </div>
+                                    <div class="col">
+                                        <select id="tdContainers"></select>
+                                        <div id="projectsButton"><i class="fas fa-redo fa-2x" title="Refresh"></i></div>
+                                    </div>                                    
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <button id="resetButton">Reset alle presentaties</button>&nbsp;
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div style="width: 300px;">
+                                    <div class="row">
+                                        <div class="col"></div>
+                                        <div class="col">
+                                            <img src="../img/arrow-up.png" title="Op" id="downButton" class="navButton" />
+                                        </div>
+                                        <div class="col"></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <img src="../img/arrow-left.png" title="Vorige pagina" id="backButton" class="navButton" />
+                                        </div>
+                                        <div class="col">
+                                            <img src="../img/home.png" title="Terug naar startpagina" id="rootButton" class="navButton" />
+                                        </div>
+                                        <div class="col">
+                                            <img src="../img/arrow-right.png" title="Volgende pagina" id="nextButton" class="navButton" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col"></div>
+                                        <div class="col">
+                                            <img src="../img/arrow-down.png" title="Neer" id="upButton" class="navButton" />
+                                        </div>
+                                        <div class="col"></div>
+                                    </div>
+                                    <div id="tdAssets" class="col"></div> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="userId" style="display: none;"><%= username %></div>
+    <script src="/js/controller.js" type="text/javascript"></script>

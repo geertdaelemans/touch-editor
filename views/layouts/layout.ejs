@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="/css/nouislider.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/<% if (locals.stylesheet) { %><%= stylesheet %><% } else {%>standard.css<% } %>">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+</head>
+
+<body>
+<%- include('../partials/navbar.ejs', { role: locals.role, name: locals.name }); %>
+<%- body %>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/jquery-ui.min.js"></script>
+    <script src="/js/jquery.dialogextend.min.js"></script>
+    <script src="/js/popper.min.js"></script>
+    <script src="/js/vis-network.min.js"></script>
+    <script src="/js/fontawesome-all.js"></script>
+    <script src="/js/html2canvas.min.js"></script>
+    <script src="/js/nouislider.min.js"></script>
+    <script src="/js/wNumb.min.js"></script>
+</body>
+
+</html>

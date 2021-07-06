@@ -1,0 +1,24 @@
+<div>
+    <label>Name</label>
+    <input type="text" name="name" value="<%= account.name %>"
+</div>
+<div>
+    <label>Email</label>
+    <input type="email" name="username" value="<%= account.username %>"/>
+</div>
+<div>
+    <label>Password</label>
+    <input type="password" name="password" value="<%= password %>" />
+</div>
+<div>
+    <label>Role</label>
+    <select name="role">
+    <% roles.forEach(role => { %>
+        <% if (role.id === account.role) { %>
+            <option selected label="<%= role.name %>" value="<%= role.id %>">test</option>
+        <% } else { %>
+            <option label="<%= role.name %>" value="<%= role.id %>">test</option>
+        <% } %>
+    <% }) %>
+    </select>
+</div>

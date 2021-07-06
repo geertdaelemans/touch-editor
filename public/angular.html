@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+<body>
+    <div data-ng-app="myApp" data-ng-init="firstName='John';myCol='lightblue';names=['aap','mies','boom']" ng-controller="myCtrl">
+        <p>The name is <span data-ng-bind="firstName"></span></p>
+        First Name: <input type="text" data-ng-model="firstName"><br />
+        Last Name: <input type="text" data-ng-model="lastName"><br />
+        <br />
+        Full Name: {{firstName + " " + lastName}}
+        <p>My first expression: {{ 5 + 5 }}</p>
+        <input style="background-color:{{myCol}}" ng-model="myCol">
+        <ul>
+            <li ng-repeat="x in names">
+              {{ x }}
+            </li>
+        </ul>
+    </div>
+    <script>
+        var app = angular.module('myApp', []);
+        app.controller('myCtrl', function($scope) {
+          $scope.firstName= "John";
+          $scope.lastName= "Doe";
+        });
+    </script>
+
+</body>
+
+</html>

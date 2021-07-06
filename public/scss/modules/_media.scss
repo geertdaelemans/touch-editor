@@ -1,0 +1,57 @@
+/* 
+ * Media
+ */
+
+#media {
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+
+    .mediaAssets {
+        background-color: white;
+        vertical-align: middle;
+        float: left;
+        padding: 5px;
+        margin: 5px;
+    }
+
+    .mediaAssets:hover {
+        background-color: orange;
+    }
+
+    .mediaAssets img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+    }
+
+    .mediaAssets.addButton {
+        background-color: transparent;
+        opacity: 0.5;
+    }
+
+    .mediaAssets.addButton:hover {
+        opacity: 1.0;
+    }
+
+    .scroll, .static {
+        width: 100px;
+        height: 30px;
+        text-align: left;
+        overflow: hidden;
+        line-height: 25px;
+        padding: 5px;
+        position: relative;
+    }
+
+    .scroll span {
+        position: absolute;
+        white-space: nowrap;
+        transform: translateX(0);
+        transition: 1s;
+    }
+
+    .scroll:hover span {
+        transform: translateX(calc(90px - 100%));
+    }
+}
