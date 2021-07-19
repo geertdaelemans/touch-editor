@@ -2582,10 +2582,16 @@ class Template {
         this.name = template;
         this.fields = null;
         if (this.name == '') {
+            curPage.data.html = undefined;
+            delete curPage.data.html;
             curPage.data.asset = undefined;
             delete curPage.data.asset;
             curPage.data.fields = undefined;
             delete curPage.data.fields;
+            curPage.data.background = undefined;
+            delete curPage.data.background;
+            curPage.data.annotate = undefined;
+            delete curPage.data.annotate;
             for (let i in directions) {
                 curPage.data[directions[i]] = undefined;
                 delete curPage.data[directions[i]];
@@ -2606,6 +2612,24 @@ class Template {
                         curPage.data.asset = undefined;
                         delete curPage.data.asset;
                     }
+                    if (currentStatus.templates[templateId].background && currentStatus.templates[templateId].background.length > 0) {
+                        curPage.data.background = currentStatus.templates[templateId].background;
+                    } else {
+                        curPage.data.background = undefined;
+                        delete curPage.data.background;
+                    }
+                    if (currentStatus.templates[templateId].annotate && currentStatus.templates[templateId].annotate.length > 0) {
+                        curPage.data.annotate = currentStatus.templates[templateId].annotate;
+                    } else {
+                        curPage.data.annotate = undefined;
+                        delete curPage.data.annotate;
+                    }
+                    if (currentStatus.templates[templateId].html && currentStatus.templates[templateId].html.length > 0) {
+                        curPage.data.html = currentStatus.templates[templateId].html;
+                    } else {
+                        curPage.data.html = undefined;
+                        delete curPage.data.html;
+                    }                 
                     for (let i in directions) {
                         let direction = directions[i];
                         if (currentStatus.templates[templateId][direction]) {
