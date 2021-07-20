@@ -95,7 +95,7 @@ if (fs.existsSync(IMPORT_FOLDER)) {
     });
     chokidar.watch(IMPORT_FOLDER).on('unlink', async (filePath) => {
         const original = `${WORKING_DIRECTORY}${DROP_FOLDER}${path.basename(filePath)}`;
-        const thumbnail = `${WORKING_DIRECTORY}${DROP_FOLDER}${path.basename(filePath, path.extname(filePath))}_thumb.png`;
+        const thumbnail = `${WORKING_DIRECTORY}${DROP_FOLDER}${path.basename(filePath, path.extname(filePath))}.png`;
         fs.unlink(original, (err) => {
             if (err) {
                 util.log(`Error while removing ${original}: ${err}`);
@@ -206,7 +206,7 @@ class Project {
                 .thumbnail({
                     count: 1,
                     timemarks: ['10%'],
-                    filename: '%b_thumb.png',
+                    filename: '%b.png',
                     folder: `${WORKING_DIRECTORY + DROP_FOLDER}/`
                 })
                 .on('error', function(error) {
@@ -237,7 +237,7 @@ class Project {
         // If IMPORT_FOLDER is present start watching
         if (fs.existsSync(WORKING_DIRECTORY + DROP_FOLDER)) {
             chokidar.watch(WORKING_DIRECTORY + DROP_FOLDER).on('add', async (filePath) => {
-                const thumbnailName = `${path.basename(filePath, path.extname(filePath))}_thumb.png`;
+                const thumbnailName = `${path.basename(filePath, path.extname(filePath))}.png`;
                 if (isVideo(filePath) && !fs.existsSync(thumbnailName)) {
                     // Start generating thumbnail
                     fs.stat(filePath, function (error, stat) {
@@ -387,8 +387,10 @@ class Project {
                             ffmpeg.ffprobe(directory + '/' + files[i], (err, metadata) => {
                                 if (metadata) {
                                     self.media[files[i]] = {
+                                        name: files[i],
                                         width: metadata.streams[0].width,
                                         height: metadata.streams[0].height,
+                                        dropFolder: false,
                                         data: metadata
                                     };
                                 }
@@ -408,7 +410,8 @@ class Project {
                             promises.push(new Promise((resolve, reject) => {
                                 ffmpeg.ffprobe(IMPORT_FOLDER + '/' + importFiles[i], (err, metadata) => {
                                     if (metadata) {
-                                        self.media[importFiles[i]] = {
+                                        self.media[`_${importFiles[i]}`] = {
+                                            name: importFiles[i],
                                             width: metadata.streams[0].width,
                                             height: metadata.streams[0].height,
                                             dropFolder: true,
@@ -1319,6 +1322,32 @@ class Project {
         })
         .catch(error => {
             util.log(`Error removing template ${pageId}: ${error}`);
+        });
+    }
+
+    // Consolidate media from dropfolder to project
+    async consolidateMedia(media) {
+        const source = `${WORKING_DIRECTORY}${DROP_FOLDER}${path.basename(media)}`;
+        const target = `${WORKING_DIRECTORY}${PRESENTATION_FOLDER}${this.name}/${path.basename(media)}`;
+        const thumbnail = `${WORKING_DIRECTORY}${DROP_FOLDER}${path.basename(media, path.extname(media))}.png`;
+        const thumbnailTarget = `${WORKING_DIRECTORY}${PRESENTATION_FOLDER}${this.name}/screenshots/${path.basename(media, path.extname(media))}.png`;
+        fs.copy(source, target, { overwrite: false })
+        .then(() => {
+            fs.copy(thumbnail, thumbnailTarget, { overwrite: false })
+            .then(() => {
+                this.listMedia()
+                .then(() =>  {
+                    this.sendMediaStatus();
+                    io.to(this.activeSession).emit('consolidatedMedia', media);
+                    util.log(`Consolidated media from ${source} to ${target}.`);
+                });
+            })
+            .catch((error) => {
+                util.log(`Error consolidating thumbnail ${thumbnailTarget}: ${error.name}.`)
+            });
+        })
+        .catch((error) => {
+            util.log(`Error consolidating media from ${source} to ${target}: ${error.name}.`);
         });
     }
 

@@ -403,6 +403,15 @@ io.on('connection', function(socket) {
         } 
     });
     
+    // Client consolidates media from dropfolder
+	socket.on('consolidateMedia', function(media) {
+        try {
+            projectArray[accounts[socket.id].name].consolidateMedia(media);
+        } catch(error) {
+            util.log(`Error during consolidation of media: ${error}`);
+        } 
+    });
+
     // Client sends screenshot
     socket.on('saveScreenShot', function(id, data) {
         try {

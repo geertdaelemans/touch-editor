@@ -1186,7 +1186,7 @@ function displayMedia() {
         // In case of video, display the generated thumbnail, else display photo.
         if (video) {
             if (data.dropFolder) {
-                image = encodeURIComponent(`/dropfolder/${imageName.replace(/\.[^/.]+$/, "")}_thumb.png`) + '?t=' + new Date().getTime(); // <-- Trick to make sure images are always refreshed
+                image = encodeURIComponent(`/dropfolder/${data.name.replace(/\.[^/.]+$/, "")}.png`) + '?t=' + new Date().getTime(); // <-- Trick to make sure images are always refreshed
             } else {
                 image = encodeURIComponent(`${currentStatus.presentationFolder + currentStatus.projectName}/screenshots/${imageName.replace(/\.[^/.]+$/, "")}.png`) + '?t=' + new Date().getTime(); // <-- Trick to make sure images are always refreshed
             }
@@ -1194,7 +1194,7 @@ function displayMedia() {
             image = encodeURIComponent(`${currentStatus.presentationFolder + currentStatus.projectName}/${imageName}`) + '?t=' + new Date().getTime(); // <-- Trick to make sure images are always refreshed
         }
         if (data.dropFolder) {
-            $('#mediaExtern').append(`<div class="mediaAssets" id="imageDrag_${mediaId}" title="${imageName}" draggable="true"><img src="${image}" draggable="false" data-value="${imageName}" id="image_${mediaId}" class="thumbnail" /><br/><div class="fileName scroll"><span>${imageName}</span></div></div>`);
+            $('#mediaExtern').append(`<div class="mediaAssets" id="imageDrag_${mediaId}" title="${data.name}" draggable="true"><img src="${image}" draggable="false" data-value="${data.name}" id="image_${mediaId}" class="thumbnail" /><br/><div class="fileName scroll"><span>${data.name}</span></div></div>`);
         } else {
             $('#mediaLocal').append(`<div class="mediaAssets" id="imageDrag_${mediaId}" title="${imageName}" draggable="true"><img src="${image}" draggable="false" data-value="${imageName}" id="image_${mediaId}" class="thumbnail" /><br/><div class="fileName scroll"><span>${imageName}</span></div></div>`);
         }
@@ -1718,15 +1718,22 @@ function createImageSelector(selectorName, target, templateTarget = null) {
         const externalSource = (event.originalEvent.dataTransfer.getData('externalSource') == 'true' ? true : false);
         const imageName = document.getElementById(data).dataset.value;
         if (target[selectorName] && target[selectorName].type) {
-            target[selectorName].content = (externalSource ? `../../dropfolder/${imageName}` : imageName);
-            if (templateTarget) templateTarget[selectorName].content = (externalSource ? `../../dropfolder/${imageName}` : imageName); // TODO Can we incorporate this into something like setField()?
+            target[selectorName].content = imageName;
+            if (templateTarget) templateTarget[selectorName].content = imageName; // TODO Can we incorporate this into something like setField()?
         } else {
-            target[selectorName] = (externalSource ? `../../dropfolder/${imageName}` : imageName);
-            if (templateTarget) templateTarget[selectorName] = (externalSource ? `../../dropfolder/${imageName}` : imageName);
+            target[selectorName] = imageName;
+            if (templateTarget) templateTarget[selectorName] = imageName;
         }
         curPage.updated = true;
         if (externalSource) {
-            $(this).attr('src', `/dropfolder/${imageName.replace(/\.[^/.]+$/, "")}_thumb.png`);
+            $(this).attr('src', `/dropfolder/${imageName.replace(/\.[^/.]+$/, "")}.png`);
+            socket.emit('consolidateMedia', imageName);
+            popUpMessage({
+                title: 'Importeren',
+                text: `<h3>Media ${imageName.replace(/\.[^/.]+$/, "")} importeren.</h3>`,
+                modal: true,
+                ok: false
+            });
         } else {
             $(this).attr('src', getMediaPath(imageName));
         }
@@ -2264,7 +2271,6 @@ class Photo {
 class Video {
     constructor(source, x, y, scale, name = null) {
         this.source = source;
-        console.log('Source', this.source);
         this.x = x;
         this.y = y;
         this.scale = scale;
@@ -3313,6 +3319,11 @@ socket.on('updateProjects', function(update, presentationFolder) {
 socket.on('media', function(msg) {
     currentStatus.media = msg;
     displayMedia();
+});
+
+socket.on('consolidatedMedia', function(msg) {
+    popUpMessage();
+    drawPage();
 });
 
 socket.on('templates', (msg) => {
