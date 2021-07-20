@@ -1373,7 +1373,7 @@ function displayTemplates() {
     });
     for (let i in currentStatus.templates) {
         let image = '';
-        let templateName = currentStatus.templates[i].fileName;
+        let templateName = currentStatus.templates[i].template;
         if (currentStatus.templates[i].template.split('.').pop() != "html" && 
             currentStatus.templates[i].template.split('.').pop() != "json") {
             image = '/img/placeholder.png';
