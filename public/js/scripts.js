@@ -1374,11 +1374,11 @@ function displayTemplates() {
     for (let i in currentStatus.templates) {
         let image = '';
         let templateName = currentStatus.templates[i].fileName;
-        if (currentStatus.templates[i].fileName.split('.').pop() != "html" && 
-            currentStatus.templates[i].fileName.split('.').pop() != "json") {
+        if (currentStatus.templates[i].template.split('.').pop() != "html" && 
+            currentStatus.templates[i].template.split('.').pop() != "json") {
             image = '/img/placeholder.png';
         } else {
-            image = encodeURIComponent(currentStatus.templates[i].filePath + currentStatus.templates[i].fileName.substr(0, currentStatus.templates[i].fileName.lastIndexOf('.')) + '.png');
+            image = encodeURIComponent(currentStatus.templates[i].filePath + currentStatus.templates[i].template.substr(0, currentStatus.templates[i].template.lastIndexOf('.')) + '.png');
         }
         $('#templates').append(`<div class="mediaAssets" id="templateDrag_${i}" draggable="true"><img src="${image}" draggable="false" data-value="${templateName}" id="template_${i}" /><br/><div class="fileName">${templateName}</div></div>`);
         $('#templateDrag_' + i).on('contextmenu', function(event) {
@@ -1771,7 +1771,7 @@ function showPageInfo() {
     $('#template').html('<option value="">Geen</option>');
     if (currentStatus.templates.length > 0) {
         for (let templateId in currentStatus.templates) {
-            let fileName = currentStatus.templates[templateId].fileName;
+            let fileName = currentStatus.templates[templateId].template;
             let fileNameClean = fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             if (fileName == curPage.data.template) {
                 $('#template').append(`<option value="${fileName}" selected="selected">${fileNameClean}</option>`);
@@ -2578,71 +2578,25 @@ class Template {
     // Setting a new template with default field values
     setTemplate(template) {
         $('#videoControl').hide();
-        const directions = ['up', 'down', 'back', 'next', 'click'];
+        const id = curPage.data.id;
         this.name = template;
         this.fields = null;
-        if (this.name == '') {
-            curPage.data.html = undefined;
-            delete curPage.data.html;
-            curPage.data.asset = undefined;
-            delete curPage.data.asset;
-            curPage.data.fields = undefined;
-            delete curPage.data.fields;
-            curPage.data.background = undefined;
-            delete curPage.data.background;
-            curPage.data.annotate = undefined;
-            delete curPage.data.annotate;
-            for (let i in directions) {
-                curPage.data[directions[i]] = undefined;
-                delete curPage.data[directions[i]];
-            }
-        } else {
+        curPage.data = {};
+        if (template != '') {
             for (let templateId in currentStatus.templates) {
-                if (currentStatus.templates[templateId].fileName == this.name) {
+                if (currentStatus.templates[templateId].template == this.name) {
+                    curPage.data = $.extend(true, {}, currentStatus.templates[templateId]); // Make a deep copy of the fields
+                    delete curPage.data.filePath;
                     if (currentStatus.templates[templateId].fields) {
                         this.fields = $.extend(true, {}, currentStatus.templates[templateId].fields);
-                        curPage.data.fields = $.extend(true, {}, currentStatus.templates[templateId].fields); // Make a deep copy of the fields
-                    } else {
-                        curPage.data.fields = undefined;
-                        delete curPage.data.fields;
-                    }
-                    if (currentStatus.templates[templateId].asset && currentStatus.templates[templateId].asset.length > 0) {
-                        curPage.data.asset = $.extend(true, [], currentStatus.templates[templateId].asset); // Make a deep copy of the assets
-                    } else {
-                        curPage.data.asset = undefined;
-                        delete curPage.data.asset;
-                    }
-                    if (currentStatus.templates[templateId].background && currentStatus.templates[templateId].background.length > 0) {
-                        curPage.data.background = currentStatus.templates[templateId].background;
-                    } else {
-                        curPage.data.background = undefined;
-                        delete curPage.data.background;
-                    }
-                    if (currentStatus.templates[templateId].annotate && currentStatus.templates[templateId].annotate.length > 0) {
-                        curPage.data.annotate = currentStatus.templates[templateId].annotate;
-                    } else {
-                        curPage.data.annotate = undefined;
-                        delete curPage.data.annotate;
-                    }
-                    if (currentStatus.templates[templateId].html && currentStatus.templates[templateId].html.length > 0) {
-                        curPage.data.html = currentStatus.templates[templateId].html;
-                    } else {
-                        curPage.data.html = undefined;
-                        delete curPage.data.html;
-                    }                 
-                    for (let i in directions) {
-                        let direction = directions[i];
-                        if (currentStatus.templates[templateId][direction]) {
-                            curPage.data[direction] = currentStatus.templates[templateId][direction];
-                        } else {
-                            curPage.data[direction] = undefined;
-                            delete curPage.data[direction];
-                        }
-                    }
+                     }
                     break;
                 }
             }
         }
+        curPage.data.id = id;
+        curPage.data.unSaved = true;
+
         // Bring the iframe upfront when no assets are detected
         if (!curPage.data.asset) {
             $('iframe').css('z-index', 0);

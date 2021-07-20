@@ -690,7 +690,7 @@ class Project {
                     const fields = await Project.extractFields(file);
                     const assets = await Project.extractAssets(file);
                     const templateData = {
-                        fileName: path.basename(file),
+                        template: path.basename(file),
                         filePath: TEMPLATES_FOLDER + 'html/',
                         fields: fields
                     }
@@ -718,7 +718,7 @@ class Project {
                 if (path.extname(file).toLowerCase() == '.json') {
                     const assets = await Project.extractAssets(file);                   
                     const templateData = {
-                        fileName: path.basename(file),
+                        template: path.basename(file),
                         filePath: TEMPLATES_FOLDER + 'json/',
                     }
                     for (let key in assets) {
