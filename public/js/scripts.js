@@ -1374,13 +1374,14 @@ function displayTemplates() {
     for (let i in currentStatus.templates) {
         let image = '';
         let templateName = currentStatus.templates[i].template;
+        const templateNameClean = templateName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
         if (currentStatus.templates[i].template.split('.').pop() != "html" && 
             currentStatus.templates[i].template.split('.').pop() != "json") {
             image = '/img/placeholder.png';
         } else {
             image = encodeURIComponent(currentStatus.templates[i].filePath + currentStatus.templates[i].template.substr(0, currentStatus.templates[i].template.lastIndexOf('.')) + '.png');
         }
-        $('#templates').append(`<div class="mediaAssets" id="templateDrag_${i}" draggable="true"><img src="${image}" draggable="false" data-value="${templateName}" id="template_${i}" /><br/><div class="fileName">${templateName}</div></div>`);
+        $('#templates').append(`<div class="mediaAssets" id="templateDrag_${i}" draggable="true"><img src="${image}" draggable="false" data-value="${templateName}" id="template_${i}" /><br/><div class="fileName">${templateNameClean}</div></div>`);
         $('#templateDrag_' + i).on('contextmenu', function(event) {
             // Avoid standard context menu
             event.preventDefault();
@@ -1779,7 +1780,7 @@ function showPageInfo() {
     if (currentStatus.templates.length > 0) {
         for (let templateId in currentStatus.templates) {
             let fileName = currentStatus.templates[templateId].template;
-            let fileNameClean = fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+            let fileNameClean = fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
             if (fileName == curPage.data.template) {
                 $('#template').append(`<option value="${fileName}" selected="selected">${fileNameClean}</option>`);
             } else {
