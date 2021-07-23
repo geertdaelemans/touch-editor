@@ -63,6 +63,14 @@ select option:disabled {
     font-weight: bold;
 }
 
+li.disabled {
+    pointer-events:none; //This makes it not clickable
+    opacity:0.6;         //This grays it out to look disabled
+    color: $color-pageBar;
+    background-color: #999999;
+    font-weight: bold;
+}
+
 button {
     border: none;
     margin: 10px 0px 10px 0px;

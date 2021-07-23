@@ -111,6 +111,7 @@ class Page {
     makeSnapShot() {
         const pageId = this.index;
         const pageName = this.data.id;
+        this.template.resetAnimation();
         html2canvas(document.querySelector('#screenshotArea'), { backgroundColor: '#000000', scale: 1 })
         .then(canvasExport => {
             const image = canvasExport.toDataURL('image/png');
@@ -167,6 +168,14 @@ class Page {
             this.index = pageIndex1;
         }
         displayPagesBar();
+    }
+    // Move page exactly behind another page
+    move(pageIndex1, pageIndex2) {
+        if(this.updated) {
+            this.save();
+        }    
+        console.log(`Move page ${pageIndex1} exactly behind ${pageIndex2}.`);
+        socket.emit('movePage', pageIndex1, pageIndex2);
     }
     clearLayers() {
         for (let i in this.layers) {
@@ -2682,6 +2691,7 @@ class Template {
                     }          
                 }
             });
+            this.resetAnimation();
             this.startAnimation();
         }
     }
@@ -2715,7 +2725,10 @@ class Template {
                     $('#canvasHtml').show();
                     self.ready = true;
                     // TODO: I just do not understand why I need a setTimeout to get this to work
-                    setTimeout(function() {self.startAnimation();}, 0);
+                    setTimeout(function() {
+                        self.resetAnimation();
+                        self.startAnimation();
+                    }, 0);
                 });
             } else {
                 this.updateFields();                    
@@ -2731,7 +2744,7 @@ class Template {
             $('#canvasHtml')[0].contentWindow.startSlide();
         }
     }
-    endAnimation() {
+    resetAnimation() {
         if (typeof $('#canvasHtml')[0].contentWindow.startSlide == 'function') {
             $('#canvasHtml')[0].contentWindow.resetSlide();
         }
@@ -3083,19 +3096,32 @@ function displayPagesBar(singlePage = null) {
             event.preventDefault();
 
             // Compose the custom menu
-            $('#popup').html('<li id="delete">Verwijder</li>');
+            $('#popup').html(`<li class="disabled">Verplaats ${currentStatus.pageIds[pageIndex]}</li>`);
+            for (let i in currentStatus.pageIds) {
+                if (i != pageIndex && i != (pageIndex - 1)) {
+                    $('#popup').append(`<li id="na${i}">Na ${currentStatus.pageIds[i]}</li>`);
+                    $(`#na${i}`).off();
+                    $(`#na${i}`).on('click', function() {
+                        $('#popup').hide(100); // Hide dropdown menu
+                        curPage.move(pageIndex, i);
+                    });
+                }
+            }
+            $('#popup').append('<li class="disabled"></li>');
             if (pageIndex < currentStatus.pageIds.length - 1) {
-                $('#popup').append('<li id="moveRight">Verplaats naar rechts</li>');
+                $('#popup').append('<li id="moveRight"><i class="fas fa-arrow-right"></i> Naar rechts</li>');
             }
             if (pageIndex > 0) {
-                $('#popup').append('<li id="moveLeft">Verplaats naar links</li>');
+                $('#popup').append('<li id="moveLeft"><i class="fas fa-arrow-left"></i> Naar links</li>');
             }
+            $('#popup').append('<li class="disabled"></li>');
+            $('#popup').append('<li id="delete"><i class="fa fa-trash" aria-hidden="true"></i> Verwijder</li>');
             // Show contextmenu
             $('#popup').finish().toggle(100).
 
             // In the right position (the mouse)
             css({
-                top: (Number(event.pageY) - $('#menu-bar').height() - 130) + "px",
+                top: (Number(event.pageY) - $('#menu-bar').height() - (currentStatus.pageIds.length + 2) * 41) + "px",
                 left: (Number(event.pageX) - $('#sidebar-left').width()) + "px"
             });
 

@@ -1301,6 +1301,26 @@ class Project {
         this.write();
     }
 
+    // Move pages
+    movePage(pageIndex1, pageIndex2) {
+        util.log(`Move pages ${pageIndex1} directly behind ${pageIndex2} .`);
+        const temp = this.pageIds[pageIndex1];
+        const temp1 = this.data.presentation.container[pageIndex1];
+        this.pageIds.splice(pageIndex1, 1);
+        this.data.presentation.container.splice(pageIndex1, 1);
+        if (pageIndex1 < pageIndex2) {
+            this.pageIds.splice(pageIndex2, 0, temp);
+            this.data.presentation.container.splice(pageIndex2, 0, temp1);
+        } else {
+            this.pageIds.splice(parseInt(pageIndex2) + 1, 0, temp);
+            this.data.presentation.container.splice(parseInt(pageIndex2) + 1, 0, temp1);
+        }
+        this.sendXml();
+        this.write();
+        this.sendStatus();
+        this.listScreenshots();
+    }
+
     // Delete page
     deletePage(pageId) {
         util.log(`Delete page ${pageId}.`);

@@ -385,6 +385,15 @@ io.on('connection', function(socket) {
         }   
     });
 
+        // Client swaps pages
+	socket.on('movePage', function(pageId1, pageId2) {
+        try {
+            projectArray[accounts[socket.id].name].movePage(pageId1, pageId2);
+        } catch(error) {
+            util.log(`Error during moving of pages: ${error}`);
+        }   
+    });
+
     // Client deletes page
 	socket.on('deletePage', function(pageId) {
         try {
