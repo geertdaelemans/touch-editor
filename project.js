@@ -1480,6 +1480,17 @@ class Project {
                     message.text = `<h3>Synchonisatie met ${target} succesvol.</h3>` + message.text;
                     util.log(`${self.name} synced.`);
                 }
+            } else if (numberOfFilesRemaining == 1) {
+                fs.copy(`${currentFolder}/index.xml`, `${syncPath}/index.xml`, { overwrite: true })
+                .then(() => {
+                    numberOfFilesRemaining--;
+                    reportProgress('index.xml', 'OK');
+                })
+                .catch(() => {
+                    numberOfFilesRemaining--;
+                    reportProgress('index.xml', 'ERROR');                     
+                    errors = true;
+                });
             }
             io.to(self.activeSession).emit('message', message);
         }
@@ -1540,16 +1551,16 @@ class Project {
                         // Copy all files available in source location
                         for (let i in sourceFiles) {
                             if (sourceFiles[i] == 'index.xml') {
-                                fs.copy(`${currentFolder}/index.xml`, `${syncPath}/index.xml`, { overwrite: true })
-                                .then(() => {
-                                    numberOfFilesRemaining--;
-                                    reportProgress(sourceFiles[i], 'OK');
-                                })
-                                .catch(() => {
-                                    numberOfFilesRemaining--;
-                                    reportProgress(sourceFiles[i], 'ERROR');                     
-                                    errors = true;
-                                });
+                                // fs.copy(`${currentFolder}/index.xml`, `${syncPath}/index.xml`, { overwrite: true })
+                                // .then(() => {
+                                //     numberOfFilesRemaining--;
+                                //     reportProgress(sourceFiles[i], 'OK');
+                                // })
+                                // .catch(() => {
+                                //     numberOfFilesRemaining--;
+                                //     reportProgress(sourceFiles[i], 'ERROR');                     
+                                //     errors = true;
+                                // });
                             } else {
                                 fs.copy(`${currentFolder}/${sourceFiles[i]}`, `${syncPath}/${sourceFiles[i]}`, { overwrite: true })
                                 .then(() => {
