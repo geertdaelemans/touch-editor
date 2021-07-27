@@ -2837,8 +2837,12 @@ class Template {
                     if (keyWords.indexOf('Twitter') != -1) {
                         $('#getTweet').show();
                         $('#getTweet').on('click', function() {
+                            let link = '';
+                            if (curPage.data.fields.hasOwnProperty('_link')) {
+                                link = curPage.data.fields['_link'];
+                            }
                             $('#message').html('<h3>Voer Tweet URL in:</h3>');
-                            $('#message').append('<input type="text" id="tweetId">');
+                            $('#message').append(`<input type="text" id="tweetId" value="${link}">`);
                             $('#dialog-message').dialog({
                                 dialogClass: "no-close",
                                 width: 600,
@@ -3426,6 +3430,7 @@ socket.on('tweet', function(tweetBody) {
     console.log(tweetBody);
     const imageName = tweetBody.user.local_copy_image;
     curPage.data.fields['Profielfoto'].content = imageName;
+    curPage.data.fields['_link'] = tweetBody.link;
     curPage.template.fields['Profielfoto'].content = imageName;
     $('#ProfielfotoSelector').attr('src', getMediaPath(imageName));
     $('#ProfielfotoSelector').attr('title', imageName);

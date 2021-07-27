@@ -117,6 +117,7 @@ class Twitter {
                 if (self.jsonData.full_text) {
                     self.jsonData.text = self.jsonData.full_text;
                 }
+                self.jsonData.link = link;
                 self.jsonData.text = self.jsonData.text.replace(/http\S+/g, '');
                 await self.saveProfileImage();
                 if (self.listMedia()) {
