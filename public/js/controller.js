@@ -200,7 +200,7 @@ socket.on('projects', function(status) {
 
 socket.on('archiveList', (archiveList) => {
     $('#archiveList').empty();
-    for (let i in archiveList) {
+    for (let i = archiveList.length -1; i >= 0; i--) {
         $('#archiveList').append(`<option value="${archiveList[i]}">${archiveList[i]}</option>`);
     }
 });
