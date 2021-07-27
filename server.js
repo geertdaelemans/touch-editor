@@ -60,6 +60,12 @@ const mongoose = require('mongoose')
 global.appRoot = path.resolve(__dirname);
 
 const Project = require('./project.js');
+
+// Configure the archive
+const ARCHIVE_FOLDER = process.env.ARCHIVE_FOLDER;
+const Archive = require('./archive.js');
+const projectArchive = new Archive(ARCHIVE_FOLDER);
+
 (async () => {
     try {
         await Project.initiateProjectArray();
@@ -437,6 +443,18 @@ io.on('connection', function(socket) {
         } catch(error) {
             util.log(`Error during syncing of ${target}: ${error}`);
         } 
+    });
+
+    socket.on('archiveProject', (projectName) => {
+        projectArchive.export(projectName);
+    });
+
+    socket.on('getArchiveList', () => {
+        io.emit('archiveList', projectArchive.projectsList);
+    });
+
+    socket.on('importProject', (projectName) => {
+        projectArchive.import(projectName);
     });
 
     // Get tweet

@@ -546,6 +546,10 @@ $(function() {
         socket.emit('changeSettings', settings);
     });
 
+    $('#archiveProject').on('click', function() {
+        socket.emit('archiveProject', currentStatus.projectName);
+    });
+
     /* 	
      * Editor Page 
      */

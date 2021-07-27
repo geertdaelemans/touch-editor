@@ -86,6 +86,15 @@ $(function() {
         socket.emit('sendToTouch', 'back');
     });
 
+    // List archive
+    socket.emit('getArchiveList');
+
+    // Importeer project
+    $('#importProject').on('click', () => {
+        const project = $('#archiveList').val();
+        socket.emit('importProject', project);
+    });
+
     // Identify user
     userName = $('#userId').text();
     console.log('Identified... after finished page.');
@@ -186,5 +195,12 @@ socket.on('projects', function(status) {
         $('#tdAssets').show();
     } else {
         $('#tdAssets').hide();        
+    }
+});
+
+socket.on('archiveList', (archiveList) => {
+    $('#archiveList').empty();
+    for (let i in archiveList) {
+        $('#archiveList').append(`<option value="${archiveList[i]}">${archiveList[i]}</option>`);
     }
 });

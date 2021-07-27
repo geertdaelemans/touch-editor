@@ -41,6 +41,7 @@ DATABASE_URL={link to MongoDB database, example: mongodb://localhost/vrttouch}
 PORT={server port: 3000}
 IMPORT_FOLDER={location of the dropfolder: \\rto.be\w\Toepassingen\VRT Touch}
 IMPORT_TEMPLATES={location of the templates repository: D:\templates}
+ARCHIVE_FOLDER={location of the archive D://Archive}
 TOUCHDESIGNER_URL={server location: localhost}
 TOUCHDESIGNER_PORT={server port: 9980}
 ```
