@@ -428,6 +428,15 @@ io.on('connection', function(socket) {
     });
     
     // Client consolidates media from dropfolder
+	socket.on('reloadOtto', function() {
+        try {
+            projectArray[accounts[socket.id].name].reloadOtto();
+        } catch(error) {
+            util.log(`Error during realoading of Otto-folder: ${error}`);
+        } 
+    });
+
+    // Client consolidates media from dropfolder
 	socket.on('consolidateMedia', function(media) {
         try {
             projectArray[accounts[socket.id].name].consolidateMedia(media);

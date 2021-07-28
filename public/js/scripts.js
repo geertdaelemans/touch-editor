@@ -1187,9 +1187,13 @@ function displayMedia() {
     formString += '<img src="/img/add-icon.png" id="newMediaButton" />';
     formString += '<div class="progress"><div class="progress-bar" role="progressbar"></div></div>';
     formString += '</div>';
-    formString += '<div style="clear: left;"><h2>Otto-importmap</h2></div>'
+    formString += '<div style="clear: left;"><h2>Otto-importmap</h2><div id="reloadOtto"><i class="fas fa-fw fa-sync"></i></div></div>'
     formString += '<div id="mediaExtern"></div>';
     $('#media').html(formString);
+    $('#reloadOtto').off();
+    $('#reloadOtto').on('click', function() {
+        socket.emit('reloadOtto');
+    });
     $('#mediaLocal').html('<div class="mediaAssets" id="imageDrag_live" draggable="true"><img src="../../img/live-stream.png" draggable="false" data-value="' + LIVE_VIDEO_TAG + '" id="image_live"><br><div class="fileName">live</div></div>');
     $('#imageDrag_live').on('dragstart', function(event) {
         event.originalEvent.dataTransfer.setData('text', event.target.id);

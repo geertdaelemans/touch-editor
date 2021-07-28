@@ -1491,6 +1491,17 @@ class Project {
         }
     }
 
+    reloadOtto() {
+        // create an empty file
+        const tempPath = `${IMPORT_FOLDER}/${Date.now()}.txt`;
+        fs.open(tempPath, 'w', (err, file) => {
+            if (err) {
+                util.log(err);
+            }
+            util.log(`Temp file ${file} is created.`);
+        });
+    }
+
     // Sync project with remote server
     sync(target) {
         // Callback function to send out current status
