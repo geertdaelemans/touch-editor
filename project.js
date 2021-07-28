@@ -366,6 +366,24 @@ class Project {
         return promise;
     }
 
+
+    isMediaUsed(value, json = this.data.presentation.container) {
+        function check(value, json) {
+            let contains = false;
+            Object.keys(json).some(key => {
+                contains = typeof json[key] === 'object' ? check(value, json[key]) : json[key] === value;
+                return contains;
+            });
+            return contains;
+        }
+        for (let container in json) {
+            if (check(value, json[container])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // List all media and put them in this.media
     // This function returns a promise
     async listMedia() {
@@ -384,6 +402,7 @@ class Project {
                 for (let i in files) {
                     if (SUPPORTED_EXTENSIONS.includes(path.extname(files[i]).toLowerCase())) {
                         promises.push(new Promise((resolve, reject) => {
+                            const used = this.isMediaUsed(files[i]);
                             ffmpeg.ffprobe(directory + '/' + files[i], (err, metadata) => {
                                 if (metadata) {
                                     self.media[files[i]] = {
@@ -391,6 +410,7 @@ class Project {
                                         width: metadata.streams[0].width,
                                         height: metadata.streams[0].height,
                                         dropFolder: false,
+                                        used: used,
                                         data: metadata
                                     };
                                 }
@@ -1391,6 +1411,17 @@ class Project {
             this.message(`<p>Fout bij het verwijderen van ${media}.</p>`);
             util.log(`Cannot delete ${filePath}: ${error}`);
         });
+    }
+
+    // Remove all unused media
+    cleanOutMedia() {
+        let files = [];
+        for (let media in this.media) {
+            if (!this.isMediaUsed(media) && media.charAt() != '_') {
+                this.deleteMedia(media);
+                files.push(media); // TODO: feed this as an array to deleteMedia()
+            }
+        }
     }
 
     // Save screenshot received from customer

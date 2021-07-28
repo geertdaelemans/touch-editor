@@ -51,7 +51,6 @@ label {
     opacity: 1.0;
 }
 
-
 input,
 select {
     height: 20px;
@@ -886,4 +885,8 @@ iframe {
 
 .syncTarget {
     width: 100%;
+}
+
+.used {
+    color:blue;
 }

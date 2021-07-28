@@ -902,6 +902,9 @@ function switchToTab(tab) {
                         $('.progress-bar').text('0%');
                         $('.progress-bar').width('0%');
                     },
+                    'Opruimen': function() {
+                        socket.emit('cleanOutMedia');
+                    },
                     'Sluiten': function() {
                         $(this).dialog('close');
                     }
@@ -1210,6 +1213,9 @@ function displayMedia() {
             $('#mediaExtern').append(`<div class="mediaAssets" id="imageDrag_${mediaId}" title="${data.name}" draggable="true"><img src="${image}" draggable="false" data-value="${data.name}" id="image_${mediaId}" class="thumbnail" /><br/><div class="fileName scroll"><span>${data.name}</span></div></div>`);
         } else {
             $('#mediaLocal').append(`<div class="mediaAssets" id="imageDrag_${mediaId}" title="${imageName}" draggable="true"><img src="${image}" draggable="false" data-value="${imageName}" id="image_${mediaId}" class="thumbnail" /><br/><div class="fileName scroll"><span>${imageName}</span></div></div>`);
+        }
+        if (data.used) {
+            $(`#imageDrag_${mediaId}`).addClass('used');
         }
         // Cover case when no thumbnail is found
         $('.thumbnail').on('error', function() {

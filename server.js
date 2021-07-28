@@ -417,6 +417,15 @@ io.on('connection', function(socket) {
             util.log(`Error during deleting of media: ${error}`);
         } 
     });
+
+    // Client removes all unused media
+	socket.on('cleanOutMedia', function() {
+        try {
+            projectArray[accounts[socket.id].name].cleanOutMedia();
+        } catch(error) {
+            util.log(`Error during cleaning out of media: ${error}`);
+        } 
+    });
     
     // Client consolidates media from dropfolder
 	socket.on('consolidateMedia', function(media) {
