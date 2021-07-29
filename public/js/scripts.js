@@ -1146,33 +1146,40 @@ function setupCanvas() {
 function addNewPagewWithTemplate(template, imageName) {
     switchToTab('viewer');
     createPage(template);
-    curPage.activeAsset = 0;
-    curPage.data.asset[curPage.activeAsset].img = imageName;
-    // Position the media such that it fills the screen and is centered
-    const scaleX = currentStatus.canvasWidth / currentStatus.media[imageName].width;
-    const scaleY = currentStatus.canvasHeight / currentStatus.media[imageName].height;
-    const scale = Math.max(scaleX, scaleY);
-    const overflowX = currentStatus.media[imageName].width * scale - currentStatus.canvasWidth;
-    const overflowY = currentStatus.media[imageName].height * scale - currentStatus.canvasHeight;
-    if (overflowX > 0) {
-        curPage.data.asset[curPage.activeAsset].xpos = -(overflowX / 2).toFixed(0);
+    console.log('template', template);
+    if (template == 'full_foto.json' || template == 'full_video.json' || template == 'doorlezer.json') {
+        curPage.activeAsset = 0;
+        curPage.data.asset[curPage.activeAsset].img = imageName;
+        // Position the media such that it fills the screen and is centered
+        const scaleX = currentStatus.canvasWidth / currentStatus.media[imageName].width;
+        const scaleY = currentStatus.canvasHeight / currentStatus.media[imageName].height;
+        const scale = Math.max(scaleX, scaleY);
+        const overflowX = currentStatus.media[imageName].width * scale - currentStatus.canvasWidth;
+        const overflowY = currentStatus.media[imageName].height * scale - currentStatus.canvasHeight;
+        if (overflowX > 0) {
+            curPage.data.asset[curPage.activeAsset].xpos = -(overflowX / 2).toFixed(0);
+        }
+        if (overflowY > 0) {
+            curPage.data.asset[curPage.activeAsset].ypos = -(overflowY / 2).toFixed(0);
+        }
+        curPage.data.asset[curPage.activeAsset].scale = scale.toFixed(2);
+        if (scale > 1.0) {
+            popUpMessage({
+                title: 'Waarschuwing',
+                text: `<h1>Opgelet: deze video moest opgeschaald worden met een factor ${scale}!</h1>`,
+                ok: true
+            });
+        }
+        curPage.updated = true;
+        drawPage();
+        refreshAsset(curPage.activeAsset);
+    } else if (template == 'Tokio_full.json') {
+        curPage.data.background = imageName;
+        curPage.updated = true;
+        $('#backgroundSelector').attr('src', getMediaPath(imageName));
+        $('#backgroundSelector').attr('title', imageName);
+        drawPage();        
     }
-    if (overflowY > 0) {
-        curPage.data.asset[curPage.activeAsset].ypos = -(overflowY / 2).toFixed(0);
-    }
-    curPage.data.asset[curPage.activeAsset].scale = scale.toFixed(2);
-    if (scale > 1.0) {
-        popUpMessage({
-            title: 'Waarschuwing',
-            text: `<h1>Opgelet: deze video moest opgeschaald worden met een factor ${scale}!</h1>`,
-            ok: true
-        });
-    }
-    curPage.updated = true;
-    $('#img').attr('src', getMediaPath(imageName));
-    $('#img').attr('title', imageName);
-    drawPage();
-    refreshAsset(curPage.activeAsset);
     $('#popup').hide(100); // Hide popup AFTER the action was triggered
     const pageId = currentStatus.pageIds[curPage.index].replace(/_/g, ' ');
     const thumbnail = `${currentStatus.presentationFolder + currentStatus.projectName}/screenshots/${imageName.replace(/\.[^/.]+$/, "")}.png`;
@@ -1263,23 +1270,23 @@ function displayMedia() {
                 // Create full video template and add video
                 $("#mediaPopup").append('<li id="fullVideo">Full video</li>');
                 $('#fullVideo').on('click', function() {
-                    addNewPagewWithTemplate('full_video.json', imageName);
+                    addNewPagewWithTemplate('Tokio_full.json', imageName);
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
                 });
-                // Create doorlezer video template and add video
-                $("#mediaPopup").append('<li id="doorlezerVideo">Doorlezer</li>');
-                $('#doorlezerVideo').on('click', function() {
-                    addNewPagewWithTemplate('doorlezer.json', imageName);
-                    $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
-                    $('#tab-media').dialog('close'); // Close Media window
-                });    
+                // // Create doorlezer video template and add video
+                // $("#mediaPopup").append('<li id="doorlezerVideo">Doorlezer</li>');
+                // $('#doorlezerVideo').on('click', function() {
+                //     addNewPagewWithTemplate('doorlezer.json', imageName);
+                //     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
+                //     $('#tab-media').dialog('close'); // Close Media window
+                // });    
                 $('#mediaPopup').append('<li class="separator"></li>');
             } else {
                 // Create full photo template and add video
                 $("#mediaPopup").append('<li id="fullPhoto">Full foto</li>');
                 $('#fullPhoto').on('click', function() {
-                    addNewPagewWithTemplate('full_foto.json', imageName);
+                    addNewPagewWithTemplate('Tokio_full.json', imageName);
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
                 });    
@@ -3188,19 +3195,19 @@ function displayPagesBar(singlePage = null) {
         if (isVideo(imageName)) {
             $('#popup').append('<li id="fullVideo">Full video</li>');
             $('#fullVideo').on('click', function() {
-                addNewPagewWithTemplate('full_video.json', imageName);
+                addNewPagewWithTemplate('Tokio_full.json', imageName);
                 $('#popup').hide(100); // Hide it AFTER the action was triggered
             });
-            // Create doorlezer video template and add video
-            $('#popup').append('<li id="doorlezerVideo">Doorlezer</li>');
-            $('#doorlezerVideo').on('click', function() {
-                addNewPagewWithTemplate('doorlezer.json', imageName);
-                $('#popup').hide(100); // Hide it AFTER the action was triggered
-            });
+            // // Create doorlezer video template and add video
+            // $('#popup').append('<li id="doorlezerVideo">Doorlezer</li>');
+            // $('#doorlezerVideo').on('click', function() {
+            //     addNewPagewWithTemplate('doorlezer.json', imageName);
+            //     $('#popup').hide(100); // Hide it AFTER the action was triggered
+            // });
         } else {
             $('#popup').append('<li id="fullPhoto">Full foto</li>');
             $('#fullPhoto').on('click', function() {
-                addNewPagewWithTemplate('full_foto.json', imageName);
+                addNewPagewWithTemplate('Tokio_full.json', imageName);
                 $('#popup').hide(100); // Hide it AFTER the action was triggered
             });            
         }
