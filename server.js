@@ -47,6 +47,7 @@ const passport = require('passport')
 const flash = require('express-flash')
 const session = require('express-session')
 const methodOverride = require('method-override')
+const config = require('./config.json');
 
 // Configure passport
 const initializePassport = require('./passport-config')
@@ -467,6 +468,11 @@ io.on('connection', function(socket) {
         projectArchive.export(projectName);
     });
 
+    socket.on('getPlayerList', () => {
+        const players = Project.listTargets();
+        io.emit('playerList', players);
+    });
+
     socket.on('getArchiveList', () => {
         io.emit('archiveList', projectArchive.projectsList);
     });
@@ -490,8 +496,13 @@ io.on('connection', function(socket) {
     });
 
     // Messages to be sent to TouchDesigner
-    socket.on('sendToTouch', function(command) {
-        console.log(command);
+    socket.on('sendToTouch', function(command, target = null) {
+        if (target) {
+            touch.init(target, config.syncTargets[target].url, config.syncTargets[target].port);
+            util.log(`Sending ${command} to ${target} TouchDesigner (${config.syncTargets[target].url}:${config.syncTargets[target].port}).`);
+        } else {
+            util.log(`Sending ${command} to TouchDesigner.`);
+        }
         touch.sendCommand(command);
     });
 

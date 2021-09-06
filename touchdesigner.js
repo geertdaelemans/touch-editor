@@ -5,11 +5,32 @@ const EventEmitter = require('events');
 class TouchDesigner extends EventEmitter {
     constructor() {
         super();
+        this._name = null;
+        this._url = null;
+        this._port = null;
         this._connected = null;
         this._client = null;
     }
 
     // Getters and setters
+    set name(value) {
+        this._name = value;
+    }
+    get name() {
+        return this._name;
+    }
+    set url(value) {
+        this._url = value;
+    }
+    get url() {
+        return this._url;
+    }
+    set port(value) {
+        this._port = value;
+    }
+    get port() {
+        return this._port;
+    }
     set connected(value) {
         this._connected = value;
         if (value) {
@@ -26,6 +47,13 @@ class TouchDesigner extends EventEmitter {
     }
     get client() {
         return this._client;
+    }
+
+    // Initialize the TouchDesigner link
+    init(name, url = "localhost", port = 9980) {
+        this.name = name;
+        this.url = url;
+        this.port = port;
     }
 
     // Connect to TouchDesigner server
@@ -166,7 +194,7 @@ class TouchDesigner extends EventEmitter {
                 }
             });
         });
-        this.client.connect(`ws://${process.env.TOUCHDESIGNER_URL}:${process.env.TOUCHDESIGNER_PORT}`);
+        this.client.connect(`ws://${this.url}:${this.port}`);
     }
 
     disconnect() {

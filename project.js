@@ -136,6 +136,7 @@ class Project {
             keys.push(key);
         }
         Project.syncTargets = keys;
+        return keys;
     }
 
     // Add user and project combination to the userList.
@@ -670,7 +671,7 @@ class Project {
         destinationDirs.push(WORKING_DIRECTORY + TEMPLATES_FOLDER); // Local instance of template directory
         for (let index in Project.syncTargets) {
             // List all directories registered as target (in configuration file)
-            destinationDirs.push(config.syncTargets[Project.syncTargets[index]] + TEMPLATES_FOLDER);
+            destinationDirs.push(config.syncTargets[Project.syncTargets[index]].dataPath + TEMPLATES_FOLDER);
         }
         // Prepare promises 
         const promises = [];
@@ -1538,7 +1539,7 @@ class Project {
         }
 
         const currentFolder = `${WORKING_DIRECTORY + PRESENTATION_FOLDER + this.name}`;
-        const syncPath = `${config.syncTargets[target] + PRESENTATION_FOLDER + this.name}`;
+        const syncPath = `${config.syncTargets[target].dataPath + PRESENTATION_FOLDER + this.name}`;
         const self = this;
 
         let message = {
@@ -1557,7 +1558,7 @@ class Project {
             util.log(`${this.name} failed to sync, because no project was selected.`);
         } else {
             // Check if remote location is available
-            fs.pathExists(config.syncTargets[target], (err, confirmed) => {
+            fs.pathExists(config.syncTargets[target].dataPath, (err, confirmed) => {
                 if (!confirmed || err) {
                     reportProgress(`<h3>De ${target} server is niet bereikbaar.</h3><p>Waarschijnlijk staat de computer uit.</p><p>Contacteer <b>FONS (5050)</b> om de TouchDesigner computer aan te zetten.</p>`);
                     util.log(`${this.name} failed to sync, bacause ${target} location not available.`);

@@ -3,6 +3,7 @@
 let socket = io();
 let userName = '';
 let pagePrepared = false;
+let currentTarget = '';
 
 function popUpMessage(message = null) {
     if (message === null)  {
@@ -41,7 +42,8 @@ $(function() {
     // Reconnect with TouchDesigner
     $('#reconnectButton').on('click', () => {
         // Send reconnect command to TouchDesigner
-        socket.emit('sendToTouch', 'reconnect');
+        currentTarget = $('#targetSelector').val();
+        socket.emit('sendToTouch', 'reconnect', currentTarget);
     });
 
     // Reset button to restart TouchDesigner
@@ -87,6 +89,7 @@ $(function() {
     });
 
     // List archive
+    socket.emit('getPlayerList');
     socket.emit('getArchiveList');
 
     // Importeer project
@@ -132,7 +135,8 @@ socket.on('whoAreYou', function() {
 });
 
 socket.on('connected', function() {
-    $('#touchDesignerStatus').html('Verbonden');
+    $('#touchDesignerStatus').html(`Verbonden met ${currentTarget}`);
+    $('#targetSelector').hide();
     $('#reconnectButton').html('Verbreek verbinding');
     socket.emit('sendToTouch', 'status');
     $('#controlPanel').show();
@@ -140,6 +144,7 @@ socket.on('connected', function() {
 
 socket.on('disconnected', function() {
     $('#touchDesignerStatus').html('Geen verbinding');
+    $('#targetSelector').show();
     $('#reconnectButton').html('Maak verbinding');
     $('#controlPanel').hide();
 });
@@ -195,6 +200,13 @@ socket.on('projects', function(status) {
         $('#tdAssets').show();
     } else {
         $('#tdAssets').hide();        
+    }
+});
+
+socket.on('playerList', (playerList) => {
+    $('#targetSelector').empty();
+    for (let i = playerList.length -1; i >= 0; i--) {
+        $('#targetSelector').append(`<option value="${playerList[i]}">${playerList[i]}</option>`);
     }
 });
 

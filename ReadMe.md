@@ -52,9 +52,16 @@ In a separate config.js file you can list all synchronisation targets:
 ```json
 {
     "syncTargets": {
-        "Nieuwsstudio": "D:\\TouchServer\\studio",
-        "Nieuwsvloer": "D:\\TouchServer\\vloer"
-    }
+        "Infostudio": { 
+            "dataPath": "\\\\d25622\\vrt-touch-data",
+            "url": "d25622",
+            "port": 9980
+        },
+        "Webstudio": {
+            "dataPath": "\\\\d25623\\vrt-touch-data",
+            "url": "d25623",
+            "port": 9980
+        }
 }
 ```
 
