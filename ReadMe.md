@@ -27,7 +27,7 @@ This file will be deleted after initialisation.
 
 ## FFPMEG installation
 Install both ffmpeg and ffprobe on the server computer. These must
-be of a version higher or equal to 0.9.
+be of a version higher or equal to 0.9. (https://www.gyan.dev/ffmpeg/builds/)
 
 Most probably ffmpeg and ffprobe will not be in your %PATH, so you
 must set %FFMPEG_PATH and %FFPROBE_PATH.
@@ -62,6 +62,7 @@ In a separate config.js file you can list all synchronisation targets:
             "url": "d25623",
             "port": 9980
         }
+    }
 }
 ```
 
@@ -122,10 +123,39 @@ This can be remedied by following scenario:
 
     1. Go to IIS (type iis in command box).
     2. Click on the server name
-    3. In the features (icons), chose the configuration editor.
+    3. In the features (icons), choose the configuration editor.
     4. Click on the dropdowns on the top next to the word Section.
     5. Traverse the path system.webServer -> security -> requestFiltering.
     6. Go to requestLimits -> maxAllowedContentLength and set it to 334217728.
     7. Hit enter and then apply on the top right.
     
     You can also restart the webserver for good measure.
+
+# SERVER STARTING AS A SERVICE
+## Install the package:
+
+```
+npm install qckwinsvc -g
+```
+
+## Installing the service:
+
+```
+> qckwinsvc
+prompt: Service name: VRTTouch
+prompt: Service description: VRT Touch Application
+prompt: Node script path: C:\Workspaces\vrt-touch-editor\server.js
+prompt: Should the service get started immediately? (y/n): y
+Service installed.
+Service started.
+```
+
+## Uninstalling the service:
+
+```
+> qckwinsvc --uninstall
+prompt: Service name: VRTTouch
+prompt: Node script path: C:\Workspaces\vrt-touch-editor\server.js
+Service stopped.
+Service uninstalled.
+```

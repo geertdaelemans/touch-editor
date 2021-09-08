@@ -404,8 +404,8 @@ let settingsOnly = false;
 let currentTab = null;
 
 const NO_MEDIA_IMAGE = "/img/no-media.png";
-const LIVE_VIDEO_IMAGE = "/img/live-stream.png";
-const LIVE_VIDEO_TAG = "[LIVE]"
+const LIVE_VIDEO_IMAGES = ["/img/live-stream-1.png", "/img/live-stream-2.png", "/img/live-stream-3.png"];
+const LIVE_VIDEO_TAGS = ["[LIVE]", "[LIVE2]", "[LIVE3]"];
 const TRANSITIONS = {
     'none': 'Geen',
     'fade': 'Fade',
@@ -1207,8 +1207,17 @@ function displayMedia() {
     $('#reloadOtto').on('click', function() {
         socket.emit('reloadOtto');
     });
-    $('#mediaLocal').html('<div class="mediaAssets" id="imageDrag_live" draggable="true"><img src="../../img/live-stream.png" draggable="false" data-value="' + LIVE_VIDEO_TAG + '" id="image_live"><br><div class="fileName">live</div></div>');
+    // TODO live, live2 and live3 can probably be made more generic (based upon length of LIVE_VIDEO_TAGS)
+    $('#mediaLocal').html(`<div class="mediaAssets" id="imageDrag_live" draggable="true"><img src="../../${LIVE_VIDEO_IMAGES[0]}" draggable="false" data-value="${LIVE_VIDEO_TAGS[0]}" id="image_live"><br><div class="fileName">Live 1</div></div>`);
+    $('#mediaLocal').append(`<div class="mediaAssets" id="imageDrag_live2" draggable="true"><img src="../../${LIVE_VIDEO_IMAGES[1]}" draggable="false" data-value="${LIVE_VIDEO_TAGS[1]}" id="image_live2"><br><div class="fileName">Live 2</div></div>`);
+    $('#mediaLocal').append(`<div class="mediaAssets" id="imageDrag_live3" draggable="true"><img src="../../${LIVE_VIDEO_IMAGES[2]}" draggable="false" data-value="${LIVE_VIDEO_TAGS[2]}" id="image_live3"><br><div class="fileName">Live 3</div></div>`);
     $('#imageDrag_live').on('dragstart', function(event) {
+        event.originalEvent.dataTransfer.setData('text', event.target.id);
+    });
+    $('#imageDrag_live2').on('dragstart', function(event) {
+        event.originalEvent.dataTransfer.setData('text', event.target.id);
+    });
+    $('#imageDrag_live3').on('dragstart', function(event) {
         event.originalEvent.dataTransfer.setData('text', event.target.id);
     });
     let mediaId = 0;
@@ -1710,7 +1719,11 @@ function createImageSelector(selectorName, target, templateTarget = null) {
             selector.attr('src', getMediaPath(target[selectorName].content));
             selector.attr('title', target[selectorName].content);           
         } else {
-            selector.attr('src', getMediaPath(target[selectorName]));
+            if (LIVE_VIDEO_TAGS.includes(target[selectorName])) {
+                selector.attr('src', LIVE_VIDEO_IMAGES[LIVE_VIDEO_TAGS.indexOf(target[selectorName])]);
+            } else {
+                selector.attr('src', getMediaPath(target[selectorName]));
+            }
             selector.attr('title', target[selectorName]);
         }
     } else {
@@ -1782,7 +1795,11 @@ function createImageSelector(selectorName, target, templateTarget = null) {
                 ok: false
             });
         } else {
-            $(this).attr('src', getMediaPath(imageName));
+            if (LIVE_VIDEO_TAGS.includes(imageName)) {
+                $(this).attr('src', LIVE_VIDEO_IMAGES[LIVE_VIDEO_TAGS.indexOf(imageName)]);
+            } else {
+                $(this).attr('src', getMediaPath(imageName));
+            }
         }
         $(this).attr('title', imageName);
         if (isVideo(imageName) && !target[selectorName].type) {
@@ -2969,7 +2986,7 @@ function drawPage() {
         // Ensure that asset is an array
         if (curPage.data.asset && !Array.isArray(curPage.data.asset)) {
             let temp = curPage.data.asset;
-            curPage.data.asset.length = 0;
+            curPage.data.asset = [];
             if (temp) {
                 curPage.data.asset.push(temp);
             }
@@ -3031,8 +3048,8 @@ function drawPage() {
             } else {
                 let imagePath = "";
                 if (imageValid) {
-                    if (assetContent.img == LIVE_VIDEO_TAG) {
-                        imagePath = LIVE_VIDEO_IMAGE;
+                    if (LIVE_VIDEO_TAGS.includes(assetContent.img)) {
+                        imagePath = LIVE_VIDEO_IMAGES[LIVE_VIDEO_TAGS.indexOf(assetContent.img)];
                     } else {
                         imagePath = currentStatus.presentationFolder + currentStatus.projectName + '/' + assetContent.img;
                     }

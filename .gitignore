@@ -1,6 +1,7 @@
 .env
 config.json
 /node_modules
+/daemon
 
 /public/presentation/*
 !/public/presentation/ReadMe.txt
