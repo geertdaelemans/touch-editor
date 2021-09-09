@@ -1088,7 +1088,7 @@ function setupCanvas() {
                 curPage.layers[parseInt(curPage.activeAsset) + 1].editing = false;
             }
             // Handle action when clicking on page, but not on asset
-            if (curPage.data.click) {
+            if (curPage.data.click && event.button == 0) {
                 switchPage(curPage.data.click);
             }
             curPage.activeAsset = null;

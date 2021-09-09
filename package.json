@@ -49,7 +49,7 @@
     "gulp-run": "^1.7.1",
     "gulp-sass": "^4.1.0",
     "gulp-sourcemaps": "^2.6.5",
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.12"
   },
   "nodemonConfig": {
     "ignore": [
