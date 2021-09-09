@@ -1087,6 +1087,10 @@ function setupCanvas() {
             if (curPage.activeAsset && curPage.layers[parseInt(curPage.activeAsset) + 1].type && curPage.layers[parseInt(curPage.activeAsset) + 1].type == 'video') {
                 curPage.layers[parseInt(curPage.activeAsset) + 1].editing = false;
             }
+            // Handle action when clicking on page, but not on asset
+            if (curPage.data.click) {
+                switchPage(curPage.data.click);
+            }
             curPage.activeAsset = null;
             canvas.context.beginPath(); // Clear active region
             showSubSection('pagina');
