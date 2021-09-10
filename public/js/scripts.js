@@ -274,11 +274,46 @@ class Projects {
             $('#pageInfo').hide();
             $('#fieldsInfo').hide();
             $('#assetInfo').hide();
-            // Show project info on right menu bar
-            $('#projectInfo').show();
             // Toggle right menu bar
-            toggleRightBar(true);
-            showSubSection('project');
+            toggleRightBar(false);
+            $('#projectSettings').dialog({
+                dialogClass: "no-close",
+                width: 600,
+                height: 400,
+                maxWidth: 600,
+                maxHeight: 600,
+                title: 'Projectinstellingen',
+                modal: false,
+                buttons: {
+                    OK: function() {
+                        // Retrieve all settings after submit
+                        const settings = {
+                            projectName: $('#projectName').val(),
+                            canvasWidth: $('#canvasWidth').val(),
+                            canvasHeight: $('#canvasHeight').val(),
+                            transitionSpeed: $('#transitionSpeed').val()
+                        };
+                        // Make sure that after submitting the settings fields are correct
+                        // A status will be broadcasted, but this might not be in time for the refresh
+                        currentStatus.canvasWidth = settings.canvasWidth;
+                        currentStatus.canvasHeight = settings.canvasHeight;
+                        currentStatus.transitionSpeed = settings.transitionSpeed;
+                        // Handle the private checkbox
+                        if ($('#private').is(':checked')) {
+                            settings.owner = userName;
+                            currentStatus.owner = userName;
+                        } else {
+                            currentStatus.owner = '';
+                        }
+                        // Emit the settings only
+                        socket.emit('changeSettings', settings);
+                        $(this).dialog("close");
+                    },
+                    Annuleren: function() {
+                        $(this).dialog("close");
+                    }
+                }
+            });
         });
     }
         
@@ -466,7 +501,7 @@ function isVideo(fileName) {
 
 // Show or hide subsections from right menu bar
 function showSubSection(subSection, speed = 'fast') {
-    const subSections = ['project', 'pagina', 'asset', 'fields'];
+    const subSections = ['pagina', 'asset', 'fields'];
     for (let i in subSections) {
         if (subSection == subSections[i]) {
             $(`#${subSections[i]}Form`).slideDown(speed);
@@ -493,6 +528,7 @@ $(function() {
     });
 
     $('#dialog-message').hide();
+    $('#projectSettings').hide();
     $('#menu-toggle').show();
     $('#sidebarToggle').show();
 
@@ -514,6 +550,7 @@ $(function() {
     $('#networkButton').hide();
     $('#xmlButton').hide();
     $('#syncButton').hide();
+    $('#archiveButton').hide();
     $('#undoButton').hide();
     $('#undoButton').off();
     $('#undoButton').on('click', () => {
@@ -535,12 +572,6 @@ $(function() {
     /* 	
      * Hide all buttons on right menu bar 
      */
-    $('#projectInfo').hide();
-
-    
-    $('#projectToggle').on('click', function() {
-        showSubSection('project');
-    });    
     $('#paginaToggle').on('click', function() {
         showSubSection('pagina');
     });
@@ -555,33 +586,6 @@ $(function() {
      * Projects Page 
      */
     $('#privateLabel').hide();
-    $('#saveSettings').on('click', function() {
-        // Retrieve all settings after submit
-        let settings = {
-            projectName: $('#projectName').val(),
-            canvasWidth: $('#canvasWidth').val(),
-            canvasHeight: $('#canvasHeight').val(),
-            transitionSpeed: $('#transitionSpeed').val()
-        };
-        // Make sure that after submitting the settings fields are correct
-        // A status will be broadcasted, but this might not be in time for the refresh
-        currentStatus.canvasWidth = settings.canvasWidth;
-        currentStatus.canvasHeight = settings.canvasHeight;
-        currentStatus.transitionSpeed = settings.transitionSpeed;
-        // Handle the private checkbox
-        if ($('#private').is(':checked')) {
-            settings.owner = userName;
-            currentStatus.owner = userName;
-        } else {
-            currentStatus.owner = '';
-        }
-        // Emit the settings only
-        socket.emit('changeSettings', settings);
-    });
-
-    $('#archiveProject').on('click', function() {
-        socket.emit('archiveProject', currentStatus.projectName);
-    });
 
     /* 	
      * Editor Page 
@@ -916,6 +920,26 @@ function syncProject() {
     }
 }
 
+// Archive project 
+function archiveProject() {
+    socket.emit('archiveProject', currentStatus.projectName);
+    $('#message').html(`<h1>Project <i>"${currentStatus.projectName}"</i> succesvol gearchiveerd.</h1>`);
+    $('#dialog-message').dialog({
+        dialogClass: "no-close",
+        width: 600,
+        height: 250,
+        maxWidth: 600,
+        maxHeight: 600,
+        title: 'Archiveren',
+        modal: false,
+        buttons: {
+            OK: function() {
+                $(this).dialog("close");
+            }
+        }
+    });
+}
+
 // Switch between tabs (projects, viewer, media, xml)
 function switchToTab(tab) {
     if (tab == 'media') {
@@ -957,6 +981,8 @@ function switchToTab(tab) {
         }
     } else if (tab == 'sync') {
         syncProject();
+    } else if (tab == 'archive') {
+        archiveProject();
     } else if (tab == 'help') {
         window.open('/help','_blank');
     } else if (tab != currentTab) {
@@ -972,7 +998,6 @@ function switchToTab(tab) {
         $target.siblings().css("display", "none");
         $target.fadeIn("fast");
         if (tab == 'projects') {
-            $('#projectInfo').show();
             $('#pageInfo').hide();
             $('#fieldsInfo').hide();
         }
@@ -1176,7 +1201,9 @@ function setupCanvas() {
         drawAssets();
     });
 
-    popUpMessage();
+    if($('#message').text() == 'Loading...') {
+        popUpMessage();
+    }
 }
 
 // Function to add a new page based on a template and with image/video selected
@@ -3427,8 +3454,6 @@ socket.on('projectReady', function() {
     if (!settingsOnly) {
         $('#projectTitle').text(currentStatus.projectName);
         toggleRightBar(false);
-        // Hide project info from right side bar
-        $('#projectInfo').hide();
         // Show page info on right side bar
         $('#pageInfo').show();
         // Show all edit buttons on left side bar
@@ -3438,6 +3463,7 @@ socket.on('projectReady', function() {
         $('#networkButton').show();
         $('#xmlButton').show();
         $('#syncButton').show();
+        $('#archiveButton').show();
         switchToTab('viewer');
     } else {
         $('#projectTitle').text('');
@@ -3447,6 +3473,7 @@ socket.on('projectReady', function() {
         $('#networkButton').hide();
         $('#xmlButton').hide();
         $('#syncButton').hide();
+        $('#archiveButton').hide();
         settingsOnly = false;
     }
 });

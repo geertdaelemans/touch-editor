@@ -4,35 +4,6 @@
 
         <!-- Sidebar Right -->
         <div id="sidebar-right">
-            <div id="projectInfo" class="parameters">
-                <h2 id="projectToggle" class="toggle">Project</h2>
-                <div id="projectForm">
-                    <div>
-                        <label for="projectName">Naam</label><br />
-                        <input type="text" id="projectName" class="textField" />
-                    </div>
-                    <div>
-                        <label for="resolution">Resolutie</label><br />
-                        <select id="resolution"></select><br />
-                        <div id="resolutionDetails">
-                            <input type="number" id="canvasWidth" class="numberField" />&nbsp;x&nbsp;
-                            <input type="number" id="canvasHeight" class="numberField" />
-                        </div>
-                    </div>
-                    <div>
-                        <label for="transitionSpeed">Snelheid wipe</label><br />
-                        <input type="number" id="transitionSpeed" class="numberField" min="0.1" step="0.1" />&nbsp;seconden
-                    </div>
-                    <div>
-                        <label for="private">Privaat</label><br />
-                        <input id="private" type="checkbox" />
-                    </div>
-                    <div id="buttonWrapper">
-                        <button id="saveSettings" type="button"><i class="fas fa-save"></i>&nbsp;Bewaar</button>
-                        <button id="archiveProject" type="button"><i class="fas fa-archive"></i>&nbsp;Archiveer</button>
-                    </div>
-                </div>
-            </div>
             <div id="pageInfo" class="parameters">
                 <h2 id="paginaToggle" class="toggle">Pagina</h2>
                 <div id="paginaForm">
@@ -147,7 +118,7 @@
                 <div class="tabs-main-content">
 
                     <!-- Begins tab-projects -->
-                    <div id="tab-projects" class="tab-content">
+                    <div id="tab-projects" class="tab-content" style="display:none">
                         <div class="main-content">
                             <div id="projects"></div>
                             <div id="privateLabel" style="clear:both;"><h2>Private projecten</h2></div>
@@ -156,7 +127,7 @@
                     </div>
 
                     <!-- Begins tab-viewer -->
-                    <div id="tab-viewer" class="tab-content">
+                    <div id="tab-viewer" class="tab-content" style="display:none">
                         <div class="main-content">
                             <div id="zoomContainer">
                                 <div id="zoomSlider" class="slider"></div>
@@ -194,7 +165,7 @@
                     </div>
 
                     <!-- Begins tab-templates -->
-                    <div id="tab-templates" class="tab-content">
+                    <div id="tab-templates" class="tab-content" style="display:none">
                         <div class="main-content">
                             <div id="templates">
                             </div>
@@ -202,7 +173,7 @@
                     </div>
 
                     <!-- Begins tab-media -->
-                    <div id="tab-media" class="tab-content">
+                    <div id="tab-media" class="tab-content" style="display:none">
                         <div class="main-content">
                             <div id="media">
                             </div>
@@ -212,12 +183,12 @@
                     </div>
 
                     <!-- Begins tab-network -->
-                    <div id="tab-network" class="tab-content">
+                    <div id="tab-network" class="tab-content" style="display:none">
                         <div id="pageNetwork"></div>
                     </div>
 
                     <!-- Begins tab-xml -->
-                    <div id="tab-xml" class="tab-content">
+                    <div id="tab-xml" class="tab-content" style="display:none">
                         <div class="main-content">
                             <button id="xmlViewButton">XML</button>
                             <button id="jsonViewButton">JSON</button>
@@ -244,8 +215,32 @@
                 </ul>
             </div> <!-- /.container-fluid -->
         </div> <!-- /.page-content-wrapper -->
-        <div id="dialog-message" class="message" title="Boodschap">
+        <div id="dialog-message" class="message" title="Boodschap" style="display:none">
             <div id="message">
+            </div>
+        </div>
+        <div id="projectSettings" class="parameters" style="display:none">
+            <div id="projectForm">
+                <div>
+                    <label for="projectName">Naam</label><br />
+                    <input type="text" id="projectName" class="textField" />
+                </div>
+                <div>
+                    <label for="resolution">Resolutie</label><br />
+                    <select id="resolution"></select><br />
+                    <div id="resolutionDetails">
+                        <input type="number" id="canvasWidth" class="numberField" />&nbsp;x&nbsp;
+                        <input type="number" id="canvasHeight" class="numberField" />
+                    </div>
+                </div>
+                <div>
+                    <label for="transitionSpeed">Snelheid wipe</label><br />
+                    <input type="number" id="transitionSpeed" class="numberField" min="0.1" step="0.1" />&nbsp;seconden
+                </div>
+                <div>
+                    <label for="private">Privaat</label><br />
+                    <input id="private" type="checkbox" />
+                </div>
             </div>
         </div>
     </div> <!-- /#wrapper -->

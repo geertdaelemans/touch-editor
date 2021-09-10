@@ -966,7 +966,7 @@ class Project {
         this.updateState();
         this.sendXml();
         Project.sendProjectsUpdate();
-        this.message(`<p>Intellingen presentatie ${this.name} succesvol gewijzigd.`);
+        this.message(`<h1>Intellingen presentatie <i>"${this.name}"</i> succesvol gewijzigd.</h1>`);
         util.log(`Changed settings of ${this.name}.`);
     }
 
