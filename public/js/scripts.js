@@ -11,6 +11,16 @@ let socket = io();
 let currentStatus = {
     data: []
 };
+const RESOLUTION_OPTIONS = {
+    "HD Horizontaal": {
+        "canvasWidth": 1920,
+        "canvasHeight": 1080
+    },
+    "HD Verticaal": {
+        "canvasWidth": 1080,
+        "canvasHeight": 1920        
+    }
+}
 
 const network = new Network();
 
@@ -382,11 +392,34 @@ class Projects {
             // Update project details
             if (currentStatus.projectName) {
                 $('#projectName').val(currentStatus.projectName);
+                $('#resolution').empty();
+                let selectedType = "Custom";
+                for (let type in RESOLUTION_OPTIONS) {
+                    $('#resolution').append(`<option value="${type}">${type}</option>`);
+                    if (currentStatus.canvasWidth == RESOLUTION_OPTIONS[type].canvasWidth && 
+                        currentStatus.canvasHeight == RESOLUTION_OPTIONS[type].canvasHeight) {
+                        selectedType = type;
+                    }
+                }
+                $('#resolution').append(`<option value="Custom">Aangepast</option>`);
+                $('#resolutionDetails').toggle(selectedType == "Custom");
+                $('#resolution').val(selectedType);
                 $('#canvasWidth').val(currentStatus.canvasWidth);
                 $('#canvasHeight').val(currentStatus.canvasHeight);
                 $('#transitionSpeed').val(currentStatus.transitionSpeed);
                 $('#private').prop('checked', currentStatus.owner ? true : false);
             }
+            $('#resolution').off();
+            $('#resolution').on('change', function() {
+                const type = $(this).val();
+                if (type != "Custom") {
+                    $('#canvasWidth').val(RESOLUTION_OPTIONS[type].canvasWidth);
+                    $('#canvasHeight').val(RESOLUTION_OPTIONS[type].canvasHeight);
+                    $('#resolutionDetails').hide();
+                } else {
+                    $('#resolutionDetails').show();
+                }
+            });
         }
     }    
 }
@@ -2423,9 +2456,19 @@ class Video {
                 this.nextKeyFrame = keyFrame;
             }
             $('#addKeyFrameButton').removeClass('fa-minus').addClass('fa-plus');
-            this.source.play();
+            let playPromise = this.source.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Error playing...', error.name);
+                });
+            }
         } else {
-            this.source.pause();
+            let pausePromise = this.source.pause();
+            if (pausePromise !== undefined) {
+                pausePromise.catch(error => {
+                    console.log('Error pausing...', error.name);
+                });               
+            }
         }
     }
     jumpForwards() {

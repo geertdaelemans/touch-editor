@@ -6,7 +6,7 @@
     width: 95%;
     margin-left: auto;
     margin-right: auto;
-
+   
     .projectButton {
         background-color: white;
         vertical-align: middle;
@@ -21,7 +21,7 @@
 
     .projectButton img {
         width: 300px;
-        height: 300px;
+        height: 200px;
         object-fit: contain;
     }
 
@@ -29,13 +29,11 @@
         font-size: 20px;
         margin: 10px 0px 0px 0px;
         bottom: -30px;
-        height: 0px;
     }
 
     .projectButton .locked {
         position: relative;
-        top: -50px;
-        height: 0px;
+        height: 30px;
     }
 
     .projectButton.active {

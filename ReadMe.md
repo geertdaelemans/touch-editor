@@ -6,8 +6,8 @@ Get and install a free MongoDB instance at:
 
 Start the server (all default values are ok, no need to fill in an URL).
 
-## Adding a default user (adiminstator):
-In the .deploy directory add the temporary file users.json containing (example):
+## Adding a default user (administrator):
+Create a temporary .deploy directory. Add in this directory the file users.json containing (example):
 
 ```json
 {
@@ -44,10 +44,14 @@ IMPORT_TEMPLATES={location of the templates repository: D:\templates}
 ARCHIVE_FOLDER={location of the archive D://Archive}
 TOUCHDESIGNER_URL={server location: localhost}
 TOUCHDESIGNER_PORT={server port: 9980}
+TWITTER_CONSUMER_KEY={YourConsumerKey}
+TWITTER_CONSUMER_SECRET={YourConsumerSecret}
+TWITTER_ACCESS_TOKEN={YourAccessTokenKey}
+TWITTER_ACCESS_TOKEN_SECRET={YourAccessTokenSecret}
 ```
 
-## config.js
-In a separate config.js file you can list all synchronisation targets:
+## config.json
+In a separate config.json file you can list all synchronisation targets:
 
 ```json
 {
