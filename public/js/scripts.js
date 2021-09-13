@@ -1177,8 +1177,8 @@ function setupCanvas() {
 
         // When in 'asset moving' mode, process the actual move
         if (moving) {
-            let newX = Number(curPage.data.asset[curPage.activeAsset].xpos) + (mouseX - refX);
-            let newY = Number(curPage.data.asset[curPage.activeAsset].ypos) - (mouseY - refY);
+            let newX = Number(curPage.data.asset[curPage.activeAsset].xpos) + Number((mouseX - refX) / canvas.scale);
+            let newY = Number(curPage.data.asset[curPage.activeAsset].ypos) - Number((mouseY - refY) / canvas.scale);
             curPage.data.asset[curPage.activeAsset].xpos = newX;
             curPage.data.asset[curPage.activeAsset].ypos = newY;
             curPage.updated = true;
