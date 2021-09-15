@@ -173,12 +173,12 @@ class TouchDesigner extends EventEmitter {
                 }
             });
             self.removeAllListeners('switchPage');
-            self.on('switchPage', (page) => {
+            self.on('switchPage', (page, transition = 'cut') => {
                 if (connection.connected) {
                     let message = { 
                         command: 'jumpPage',
                         page: page,
-                        transition: 'fade' 
+                        transition: transition 
                     }
                     connection.sendUTF(JSON.stringify(message));
                 }
@@ -229,8 +229,8 @@ class TouchDesigner extends EventEmitter {
     }
 
     // Change project
-    switchPage(page) {
-        this.emit('switchPage', page);
+    switchPage(page, transition) {
+        this.emit('switchPage', page, transition);
     }
 
     // Click on an asset
