@@ -514,8 +514,8 @@ io.on('connection', function(socket) {
         touch.changeProject(project);
     });
 
-    socket.on('TD_container', function(page) {
-        touch.switchPage(page);
+    socket.on('TD_container', function(page, transition) {
+        touch.switchPage(page, transition);
     });
 
     socket.on('TD_asset', function(asset) {
