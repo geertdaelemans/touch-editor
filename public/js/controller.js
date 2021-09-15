@@ -4,6 +4,14 @@ let socket = io();
 let userName = '';
 let pagePrepared = false;
 let currentTarget = '';
+const TRANSITIONS = {
+    'none': 'Geen',
+    'fade': 'Fade',
+    'right': 'Rechts',
+    'left': 'Links',
+    'up': 'Op',
+    'down': 'Neer'
+}
 
 function popUpMessage(message = null) {
     if (message === null)  {
@@ -87,6 +95,12 @@ $(function() {
         // Send back command to TouchDesigner        
         socket.emit('sendToTouch', 'back');
     });
+
+    for (let key in TRANSITIONS) {
+        if (TRANSITIONS.hasOwnProperty(key)) {
+            $('#tdTransitions').append('<option value="' + key + '">' + TRANSITIONS[key] + '</option>');
+        }
+    }
 
     // List archive
     socket.emit('getPlayerList');
@@ -182,8 +196,8 @@ socket.on('projects', function(status) {
     $('#tdContainers').css('height', 'auto');
     $('#tdContainers').off();
     $('#tdContainers').on('change', function() {
-        console.log('Page', $(this).val());
-        socket.emit('TD_container', $(this).val());
+        console.log('Page', $(this).val(), $("#tdTransitions").val());
+        socket.emit('TD_container', $(this).val(), $("#tdTransitions").val());
     });
 
     // Create asset buttons simulating clicks on assets
