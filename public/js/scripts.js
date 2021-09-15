@@ -11,6 +11,7 @@ let socket = io();
 let currentStatus = {
     data: []
 };
+let timer;
 const RESOLUTION_OPTIONS = {
     "HD Horizontaal": {
         "canvasWidth": 1920,
@@ -963,6 +964,7 @@ function switchToTab(tab) {
                         socket.emit('cleanOutMedia');
                     },
                     'Sluiten': function() {
+                        $('#mediaPopup').hide();
                         $(this).dialog('close');
                     }
                 }
@@ -1312,9 +1314,6 @@ function displayMedia() {
             // Avoid standard context menu
             event.preventDefault();
 
-            const dialogTop = $('#media').closest('.ui-dialog').offset().top;
-            const dialogLeft = $('#media').closest('.ui-dialog').offset().left;
-
             // Compose the custom menu
             $('#mediaPopup').empty();
             if (curPage.activeAsset !== null) {
@@ -1348,7 +1347,6 @@ function displayMedia() {
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
                 });    
-                $('#mediaPopup').append('<li class="separator"></li>');
             } else {
                 // Create full photo template and add video
                 $("#mediaPopup").append('<li id="fullPhoto">Full foto</li>');
@@ -1356,21 +1354,32 @@ function displayMedia() {
                     addNewPagewWithTemplate('full_video.json', imageName);
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
-                }); 
-                $('#mediaPopup').append('<li class="separator"></li>');                
+                });             
             }
-            $('#mediaPopup').append('<li id="deleteMedia">Verwijder</li>');
+            $('#mediaPopup').append('<li id="deleteMedia"><i class="fa fa-trash" aria-hidden="true" title="Verwijder media."></i> Verwijder</li>');
             $('#deleteMedia').on('click', function() {
                 socket.emit('deleteMedia', imageName);
                 $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
             });
 
             // Show contextmenu
-            $('#mediaPopup').finish().toggle(100).
+            $('#mediaPopup').finish().show(100).
             css({   // In the right position (the mouse)
-                top: (Number(event.pageY) - dialogTop - $('.ui-dialog-titlebar').height()) + "px",
-                left: (Number(event.pageX) - dialogLeft) + "px"
+                position: "fixed",
+                top: Number(event.clientY),
+                left: Number(event.clientX) - 20
             });
+            // Remove popup when clicking left mouse
+            $('#media').off();
+            $('#media').on('click', function() {
+                $('#mediaPopup').hide(100);
+            });
+
+            // Remove popup after 2.5 seconds
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+                $('#mediaPopup').hide(100);
+            }, 2500);
         });
         mediaId++;
     }
