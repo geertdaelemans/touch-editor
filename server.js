@@ -42,6 +42,7 @@ const expressLayouts = require('express-ejs-layouts')
 const fileUpload = require('express-fileupload');
 const path = require("path");
 const http = require('http');
+const https = require('https');
 const util = require('util');
 const passport = require('passport')
 const flash = require('express-flash')
@@ -82,9 +83,6 @@ Twitter.initiateTwitter();
 
 const fs = require('fs');
 const Account = require('./models/account');
-
-const WORKING_DIRECTORY = appRoot + "/public";
-const PRESENTATION_FOLDER = "/presentation/";
 
 var accounts = {}
 
@@ -164,7 +162,17 @@ app.use(passport.session())
 
 app.use(methodOverride('_method'))
 
-var server = http.createServer(app);
+let server;
+if (process.env.SSL == 'true') {
+    const credentials = {
+        key: fs.readFileSync('./ssl/localhost-key.pem'),
+        cert: fs.readFileSync('./ssl/localhost.pem')
+    };
+    server = https.createServer(credentials, app);
+} else {
+    server = http.createServer(app);
+} 
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 

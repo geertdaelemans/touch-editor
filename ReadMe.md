@@ -39,6 +39,7 @@ Create an .env-file (no extension) containing following parameters:
 SESSION_SECRET={the secret to hash passwords}
 DATABASE_URL={link to MongoDB database, example: mongodb://localhost/vrttouch}
 PORT={server port: 3000}
+SSL=true|false
 IMPORT_FOLDER={location of the dropfolder: \\rto.be\w\Toepassingen\VRT Touch}
 IMPORT_TEMPLATES={location of the templates repository: D:\templates}
 ARCHIVE_FOLDER={location of the archive D://Archive}

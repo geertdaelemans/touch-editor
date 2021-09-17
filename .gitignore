@@ -3,6 +3,9 @@ config.json
 /node_modules
 /daemon
 
+/ssl/*
+!/ssl/ReadMe.md
+
 /public/presentation/*
 !/public/presentation/ReadMe.txt
 
