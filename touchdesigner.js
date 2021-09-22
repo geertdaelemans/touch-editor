@@ -193,6 +193,18 @@ class TouchDesigner extends EventEmitter {
                     connection.sendUTF(JSON.stringify(message));
                 }
             });
+            self.removeAllListeners('injectField');
+            self.on('injectField', (page, field, data) => {
+                if (connection.connected) {
+                    let message = { 
+                        command: 'injectField',
+                        page: page,
+                        field: field,
+                        data: data 
+                    }
+                    connection.sendUTF(JSON.stringify(message));
+                }
+            });
         });
         this.client.connect(`ws://${this.url}:${this.port}`);
     }
@@ -236,6 +248,10 @@ class TouchDesigner extends EventEmitter {
     // Click on an asset
     clickAsset(asset) {
         this.emit('clickAsset', asset);
+    }
+
+    injectField(page, field, data) {
+        this.emit('injectField', page, field, data);
     }
 }
 

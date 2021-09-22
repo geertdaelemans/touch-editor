@@ -529,6 +529,11 @@ io.on('connection', function(socket) {
     socket.on('TD_asset', function(asset) {
         touch.clickAsset(asset);
     });
+
+    // Send inject field information to TouchDesigner
+    socket.on('TD_inject', function(page, field, data) {
+        touch.injectField(page, field, data);
+    });
 });
 
 server.listen(process.env.PORT || 3000, function () {

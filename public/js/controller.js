@@ -102,6 +102,14 @@ $(function() {
         }
     }
 
+    // Menually insert field into existing templates (page)
+    $('#injectButton').on('click', () => {
+        const injectPage = $('#injectPage').val();
+        const injectField = $('#injectField').val();
+        const injectData = $('#injectData').val();        
+        socket.emit('TD_inject', injectPage, injectField, injectData);
+    });
+
     // List archive
     socket.emit('getPlayerList');
     socket.emit('getArchiveList');
