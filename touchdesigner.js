@@ -109,6 +109,26 @@ class TouchDesigner extends EventEmitter {
                     connection.sendUTF(JSON.stringify(message));
                 }
             });
+            self.removeAllListeners('touchOn');
+            self.on('touchOn', () => {
+                if (connection.connected) {
+                    let message = { 
+                        command: 'touch',
+                        state: 'on'
+                    }
+                    connection.sendUTF(JSON.stringify(message));
+                }
+            });
+            self.removeAllListeners('touchOff');
+            self.on('touchOff', () => {
+                if (connection.connected) {
+                    let message = { 
+                        command: 'touch',
+                        state: 'off'
+                    }
+                    connection.sendUTF(JSON.stringify(message));
+                }
+            });
             self.removeAllListeners('root');
             self.on('root', () => {
                 if (connection.connected) {

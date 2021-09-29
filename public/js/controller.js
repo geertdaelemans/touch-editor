@@ -60,6 +60,16 @@ $(function() {
         socket.emit('sendToTouch', 'reset');
     });
 
+    // Toggle touch function on/off
+    $('#touchToggle').on('click', () => {
+        // Send reset command to TouchDesigner
+        if ($('#touchToggle').is(":checked")) {
+            socket.emit('sendToTouch', 'touchOn');
+        } else {
+            socket.emit('sendToTouch', 'touchOff');
+        }
+    });
+
     // Projects button to retrieve list of projects from TouchDesigner
     $('#projectsButton').on('click', () => {
         // Send reset command to TouchDesigner
