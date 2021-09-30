@@ -68,6 +68,10 @@ $(function() {
         } else {
             socket.emit('sendToTouch', 'touchOff');
         }
+        socket.emit('sendToTouch', 'status');
+    });
+    $('#touchButton').on('click', () => {
+        $('#touchToggle').trigger('click');
     });
 
     // Projects button to retrieve list of projects from TouchDesigner
@@ -182,6 +186,17 @@ socket.on('disconnected', function() {
 });
 
 socket.on('projects', function(status) {
+    // Check the touch toggle
+    const touchToggle = status.touchToggle;
+    if (touchToggle == 'True') {
+        $('#touchToggle').prop('checked', true);
+        $('#touchLabel').html('<h3 style="color: green;">Touch actief.</h3>');
+        $('#touchButton').html('Stop touch');
+    } else {
+        $('#touchToggle').prop('checked', false);
+        $('#touchLabel').html('<h3 style="color: red;">Touch-functie staat uit!</h3>');
+        $('#touchButton').html('Start touch');
+    }
     // Fill the presentations list
     $('#tdProjects').empty();
     const projects = status.projects;
