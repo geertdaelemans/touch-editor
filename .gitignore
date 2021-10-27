@@ -3,6 +3,9 @@ config.json
 /node_modules
 /daemon
 
+/ffmpeg/*
+!/ffmpeg/ReadMe.md
+
 /ssl/*
 !/ssl/ReadMe.md
 
