@@ -1004,6 +1004,10 @@ class Project {
                                  containers[i].fields[j].type == 'description')) {                        
                                 containers[i].fields[j].content = xmlEscape(xmlUnEscape(containers[i].fields[j].content.toString())).toString();
                             }
+                            // TODO: Dirty workaround for the [object Object] value appearing in a field
+                            if (containers[i].fields[j].content == "[object Object]") {
+                                containers[i].fields[j].content = '';
+                            }
                         }
                     }
                 }
