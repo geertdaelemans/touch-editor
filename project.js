@@ -975,6 +975,7 @@ class Project {
             this.sendXml();
             Project.sendProjectsUpdate();
             this.message(`<h1>Intellingen presentatie <i>"${this.name}"</i> succesvol gewijzigd.</h1>`);
+            io.to(this.activeSession).emit('projectReady');
             util.log(`Changed settings of ${this.name}.`);
         } else {
             util.log(`Illegal project name. Settings not saved.`);

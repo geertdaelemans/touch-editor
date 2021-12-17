@@ -267,53 +267,12 @@ class Projects {
         // Handle right click on project button
         $(`#${projectSelector}`).on('contextmenu', function(event) {
             event.preventDefault();
-            if (currentStatus.projectName != name) {
-                settingsOnly = true;  // TODO this should be avoided by limiting the data sent to client
-                socket.emit('changeProject', name);
-            }
-            // Hide all right menu bar items
-            $('#pageInfo').hide();
-            $('#fieldsInfo').hide();
-            $('#assetInfo').hide();
-            // Toggle right menu bar
-            toggleRightBar(false);
-            $('#projectSettings').dialog({
-                dialogClass: "no-close",
-                width: 600,
-                height: 400,
-                maxWidth: 600,
-                maxHeight: 600,
+            popUpMessage({
+                height: 300,
                 title: 'Projectinstellingen',
-                modal: false,
-                buttons: {
-                    OK: function() {
-                        // Retrieve all settings after submit
-                        const settings = {
-                            projectName: $('#projectName').val(),
-                            canvasWidth: $('#canvasWidth').val(),
-                            canvasHeight: $('#canvasHeight').val(),
-                            transitionSpeed: $('#transitionSpeed').val()
-                        };
-                        // Make sure that after submitting the settings fields are correct
-                        // A status will be broadcasted, but this might not be in time for the refresh
-                        currentStatus.canvasWidth = settings.canvasWidth;
-                        currentStatus.canvasHeight = settings.canvasHeight;
-                        currentStatus.transitionSpeed = settings.transitionSpeed;
-                        // Handle the private checkbox
-                        if ($('#private').is(':checked')) {
-                            settings.owner = userName;
-                            currentStatus.owner = userName;
-                        } else {
-                            currentStatus.owner = '';
-                        }
-                        // Emit the settings only
-                        socket.emit('changeSettings', settings);
-                        $(this).dialog("close");
-                    },
-                    Annuleren: function() {
-                        $(this).dialog("close");
-                    }
-                }
+                text: '<h3>De projectinstellingen zijn verhuisd en staan nu in het project zelf. Selecteer eerst het project. Dan kan je in het linkermenu een aparte <i class="fas fa-fw fa-cog"></i>-knop vinden.</h3>',
+                modal: true,
+                ok: true
             });
         });
     }
@@ -469,7 +428,6 @@ let userName = '';
 let pagePrepared = false;
 let moving = false;
 let refX, refY = null;
-let settingsOnly = false;
 let currentTab = null;
 
 const NO_MEDIA_IMAGE = "/img/no-media.png";
@@ -552,6 +510,7 @@ $(function() {
     $('#xmlButton').hide();
     $('#syncButton').hide();
     $('#archiveButton').hide();
+    $('#settingsButton').hide();
     $('#undoButton').hide();
     $('#undoButton').off();
     $('#undoButton').on('click', () => {
@@ -985,6 +944,47 @@ function switchToTab(tab) {
         syncProject();
     } else if (tab == 'archive') {
         archiveProject();
+    } else if (tab == 'settings') {
+        // Toggle right menu bar
+        toggleRightBar(false);
+        $('#projectSettings').dialog({
+            dialogClass: "no-close",
+            width: 600,
+            height: 400,
+            maxWidth: 600,
+            maxHeight: 600,
+            title: 'Projectinstellingen',
+            modal: false,
+            buttons: {
+                OK: function() {
+                    // Retrieve all settings after submit
+                    const settings = {
+                        projectName: $('#projectName').val(),
+                        canvasWidth: $('#canvasWidth').val(),
+                        canvasHeight: $('#canvasHeight').val(),
+                        transitionSpeed: $('#transitionSpeed').val()
+                    };
+                    // Make sure that after submitting the settings fields are correct
+                    // A status will be broadcasted, but this might not be in time for the refresh
+                    currentStatus.canvasWidth = settings.canvasWidth;
+                    currentStatus.canvasHeight = settings.canvasHeight;
+                    currentStatus.transitionSpeed = settings.transitionSpeed;
+                    // Handle the private checkbox
+                    if ($('#private').is(':checked')) {
+                        settings.owner = userName;
+                        currentStatus.owner = userName;
+                    } else {
+                        currentStatus.owner = '';
+                    }
+                    // Emit the settings only
+                    socket.emit('changeSettings', settings);
+                    $(this).dialog("close");
+                },
+                Annuleren: function() {
+                    $(this).dialog("close");
+                }
+            }
+        });        
     } else if (tab == 'help') {
         window.open('/help','_blank');
     } else if (tab != currentTab) {
@@ -3428,31 +3428,20 @@ socket.on('status', function(msg, updatedPage = null) {
 });
 
 socket.on('projectReady', function() {
-    if (!settingsOnly) {
-        $('#projectTitle').text(currentStatus.projectName);
-        toggleRightBar(false);
-        // Show page info on right side bar
-        $('#pageInfo').show();
-        // Show all edit buttons on left side bar
-        $('#viewerButton').show();
-        $('#templatesButton').show();    
-        $('#mediaButton').show();  
-        $('#networkButton').show();
-        $('#xmlButton').show();
-        $('#syncButton').show();
-        $('#archiveButton').show();
-        switchToTab('viewer');
-    } else {
-        $('#projectTitle').text('');
-        $('#viewerButton').hide();
-        $('#templatesButton').hide();    
-        $('#mediaButton').hide();  
-        $('#networkButton').hide();
-        $('#xmlButton').hide();
-        $('#syncButton').hide();
-        $('#archiveButton').hide();
-        settingsOnly = false;
-    }
+    $('#projectTitle').text(currentStatus.projectName);
+    toggleRightBar(false);
+    // Show page info on right side bar
+    $('#pageInfo').show();
+    // Show all edit buttons on left side bar
+    $('#viewerButton').show();
+    $('#templatesButton').show();    
+    $('#mediaButton').show();  
+    $('#networkButton').show();
+    $('#xmlButton').show();
+    $('#syncButton').show();
+    $('#archiveButton').show();
+    $('#settingsButton').show();
+    switchToTab('viewer');
 });
 
 socket.on('updateProjects', function(update, presentationFolder) {
