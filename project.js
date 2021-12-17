@@ -199,6 +199,10 @@ class Project {
         return Project.projectArray;
     }
 
+    static projectExists(projectName) {
+        return projectName in Project.projectArray;
+    }
+
     static generateThumbnail(filePath, prev) {
         fs.stat(filePath, (error, stats) => {
             if (error) { 
@@ -953,23 +957,28 @@ class Project {
 
     // Change settings
     async changeSettings(settings) {
-        if (settings.projectName != this.name) {
-            Project.renameUserListProject(this.name, settings.projectName);
-            await this.rename(settings.projectName);
-            Project.getUserList();
-            this.name = settings.projectName;
+        if (settings.projectName) {
+            // Check if user wants to rename the project
+            if (settings.projectName != this.name && !Project.projectExists(settings.projectName)) {
+                Project.renameUserListProject(this.name, settings.projectName);
+                await this.rename(settings.projectName);
+                Project.getUserList();
+                this.name = settings.projectName;
+            }
+            this.data.presentation.settings.canvasWidth = settings.canvasWidth;
+            this.data.presentation.settings.canvasHeight = settings.canvasHeight;
+            this.data.presentation.settings.transitionSpeed = settings.transitionSpeed;
+            this.data.presentation.settings.owner = settings.owner;
+            await this.write();
+            await Project.initiateProjectArray();
+            this.updateState();
+            this.sendXml();
+            Project.sendProjectsUpdate();
+            this.message(`<h1>Intellingen presentatie <i>"${this.name}"</i> succesvol gewijzigd.</h1>`);
+            util.log(`Changed settings of ${this.name}.`);
+        } else {
+            util.log(`Illegal project name. Settings not saved.`);
         }
-        this.data.presentation.settings.canvasWidth = settings.canvasWidth;
-        this.data.presentation.settings.canvasHeight = settings.canvasHeight;
-        this.data.presentation.settings.transitionSpeed = settings.transitionSpeed;
-        this.data.presentation.settings.owner = settings.owner;
-        await this.write();
-        await Project.initiateProjectArray();
-        this.updateState();
-        this.sendXml();
-        Project.sendProjectsUpdate();
-        this.message(`<h1>Intellingen presentatie <i>"${this.name}"</i> succesvol gewijzigd.</h1>`);
-        util.log(`Changed settings of ${this.name}.`);
     }
 
     // Cleaning the assets
