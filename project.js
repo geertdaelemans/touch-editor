@@ -351,7 +351,7 @@ class Project {
                 if (owner) {
                     if (owner == -1) {
                         // Problem reading index.xml, ignoring project.
-                        break;
+                        continue;
                     }
                     project.owner = owner;
                 }
