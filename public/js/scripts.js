@@ -402,6 +402,7 @@ class Projects {
                 $('#canvasWidth').val(currentStatus.canvasWidth);
                 $('#canvasHeight').val(currentStatus.canvasHeight);
                 $('#transitionSpeed').val(currentStatus.transitionSpeed);
+                $('#transitionAudio').val(currentStatus.transitionAudio);
                 $('#private').prop('checked', currentStatus.owner ? true : false);
             }
             $('#resolution').off();
@@ -962,13 +963,15 @@ function switchToTab(tab) {
                         projectName: $('#projectName').val(),
                         canvasWidth: $('#canvasWidth').val(),
                         canvasHeight: $('#canvasHeight').val(),
-                        transitionSpeed: $('#transitionSpeed').val()
+                        transitionSpeed: $('#transitionSpeed').val(),
+                        transitionAudio: $('#transitionAudio').val()
                     };
                     // Make sure that after submitting the settings fields are correct
                     // A status will be broadcasted, but this might not be in time for the refresh
                     currentStatus.canvasWidth = settings.canvasWidth;
                     currentStatus.canvasHeight = settings.canvasHeight;
                     currentStatus.transitionSpeed = settings.transitionSpeed;
+                    currentStatus.transitionAudio = settings.transitionAudio;
                     // Handle the private checkbox
                     if ($('#private').is(':checked')) {
                         settings.owner = userName;

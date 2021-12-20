@@ -122,6 +122,7 @@ class Project {
         this.canvasWidth = STANDARD_CANVASWIDTH;
         this.canvasHeight = STANDARD_CANVASHEIGHT;
         this.transitionSpeed = STANDARD_TRANSITIONSPEED;
+        this.transitionAudio = '';
         this.numberOfPages = 0;
         this.data = {};
         this.pageIds = [];
@@ -807,6 +808,9 @@ class Project {
         // Get transition speed
         this.transitionSpeed = (settings.transitionSpeed ? settings.transitionSpeed : STANDARD_TRANSITIONSPEED);
 
+        // Get transition audio
+        this.transitionAudio = settings.transitionAudio;
+
         // Get total number of containers
         this.numberOfPages = containers.length;
 
@@ -906,12 +910,14 @@ class Project {
             this.canvasWidth = STANDARD_CANVASWIDTH;
             this.canvasHeight = STANDARD_CANVASHEIGHT;
             this.transitionSpeed = STANDARD_TRANSITIONSPEED;
+            this.transitionAudio = '';
             this.data = {
                 presentation: {
                     settings: {
                         canvasWidth: this.canvasWidth,
                         canvasHeight: this.canvasHeight,
-                        transitionSpeed: this.transitionSpeed
+                        transitionSpeed: this.transitionSpeed,
+                        transitionAudio: this.transitionAudio
                     },
                     container: {
                         id: 0,
@@ -968,6 +974,7 @@ class Project {
             this.data.presentation.settings.canvasWidth = settings.canvasWidth;
             this.data.presentation.settings.canvasHeight = settings.canvasHeight;
             this.data.presentation.settings.transitionSpeed = settings.transitionSpeed;
+            this.data.presentation.settings.transitionAudio = settings.transitionAudio;
             this.data.presentation.settings.owner = settings.owner;
             await this.write();
             await Project.initiateProjectArray();
@@ -1079,6 +1086,7 @@ class Project {
             canvasWidth: this.canvasWidth,
             canvasHeight: this.canvasHeight,
             transitionSpeed: this.transitionSpeed,
+            transitionAudio: this.transitionAudio,
             numberOfPages: this.numberOfPages,
             pageIds: this.pageIds,
             media: this.media,
