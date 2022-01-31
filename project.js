@@ -812,7 +812,7 @@ class Project {
         this.transitionAudio = settings.transitionAudio;
 
         // Get total number of containers
-        this.numberOfPages = containers.length;
+        this.numberOfPages = (containers ? containers.length : 0);
 
         // Get project owner (for private projects)
         this.owner = (settings.owner ? settings.owner : '');
@@ -996,34 +996,40 @@ class Project {
             if (containers.length) {
                 // More than one page detected
                 for (var i in containers) {
-                    // In case only one asset is present, move that asset to
-                    // an array to make further processing easier.
-                    if (containers[i].asset && !containers[i].asset.length) {
-                        let assets = [];
-                        assets.push(containers[i].asset);
-                        containers[i].asset = assets
-                    }
-                    // Check if a template has been selected. If so, retrieve
-                    // all editable fields of the template, if not present already.
-                    if (containers[i].html && containers[i].html != '') {
-                        if (!containers[i].fields) {
-                            let url = containers[i].html;
-                            if (!url.startsWith('http')) {
-                                containers[i].fields = await Project.extractFields(WORKING_DIRECTORY + TEMPLATES_FOLDER + 'html/' + url);
+                    // Make sure that the container has at least and ID defined,
+                    // otherwise, ignore the container all together.
+                    if (containers[i].id == undefined) {
+                        containers.splice(i, 1);
+                    } else {
+                        // In case only one asset is present, move that asset to
+                        // an array to make further processing easier.
+                        if (containers[i].asset && !containers[i].asset.length) {
+                            let assets = [];
+                            assets.push(containers[i].asset);
+                            containers[i].asset = assets
+                        }
+                        // Check if a template has been selected. If so, retrieve
+                        // all editable fields of the template, if not present already.
+                        if (containers[i].html && containers[i].html != '') {
+                            if (!containers[i].fields) {
+                                let url = containers[i].html;
+                                if (!url.startsWith('http')) {
+                                    containers[i].fields = await Project.extractFields(WORKING_DIRECTORY + TEMPLATES_FOLDER + 'html/' + url);
+                                }
                             }
                         }
-                    }
-                    // Make sure that the content fields do not contain characters that break XML
-                    if (containers[i].fields) {
-                        for (let j in containers[i].fields) {
-                            if (containers[i].fields[j].content && 
-                                (containers[i].fields[j].type == 'span' || 
-                                 containers[i].fields[j].type == 'description')) {                        
-                                containers[i].fields[j].content = xmlEscape(xmlUnEscape(containers[i].fields[j].content.toString())).toString();
-                            }
-                            // TODO: Dirty workaround for the [object Object] value appearing in a field
-                            if (containers[i].fields[j].content == "[object Object]") {
-                                containers[i].fields[j].content = '';
+                        // Make sure that the content fields do not contain characters that break XML
+                        if (containers[i].fields) {
+                            for (let j in containers[i].fields) {
+                                if (containers[i].fields[j].content && 
+                                    (containers[i].fields[j].type == 'span' || 
+                                    containers[i].fields[j].type == 'description')) {                        
+                                    containers[i].fields[j].content = xmlEscape(xmlUnEscape(containers[i].fields[j].content.toString())).toString();
+                                }
+                                // TODO: Dirty workaround for the [object Object] value appearing in a field
+                                if (containers[i].fields[j].content == "[object Object]") {
+                                    containers[i].fields[j].content = '';
+                                }
                             }
                         }
                     }
@@ -1288,9 +1294,41 @@ class Project {
 
     // Save edited page
     async saveXml(page) {
-        this.data = this.createJson(page);
-        await this.cleanAssets();
-        this.updateState();
+        const tempData = this.createJson(page);
+        // Check if presentation.settings.canvasWidth path is present in XML.
+        if (tempData != -1 && tempData.presentation && tempData.presentation.settings && tempData.presentation.settings.canvasWidth) {
+            // Check for valid containers, if no containers are present, accept the update.
+            if (tempData.presentation.container) {
+                let containersOK = true;
+                for (var containerId in tempData.presentation.container) {
+                    if (tempData.presentation.container[containerId].id == undefined) {
+                        util.log(`XML error detected in container ${containerId}.`);
+                        containersOK = false;
+                        break;
+                    } else if (tempData.presentation.container[containerId].asset) {
+                        if (!tempData.presentation.container[containerId].asset.id) {
+                            for (var assetId in tempData.presentation.container[containerId].asset) {
+                                if (tempData.presentation.container[containerId].asset[assetId].id == undefined) {
+                                    util.log(`XML error detected in asset ${assetId} of container ${containerId}.`);
+                                    containersOK = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (containersOK) {
+                    this.data = tempData;
+                    await this.cleanAssets();
+                }
+            } else {
+                this.data = tempData;
+            }
+        } else {
+            util.log(`XML error detected in presentation.`);
+        }
+        this.updateState('[ALL]');  // Use the [ALL] tag to force an update of all pages at the client side.
+        this.sendXml();
         this.write();
         util.log(`Saved XML page.`);
     }

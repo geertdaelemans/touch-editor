@@ -3415,7 +3415,11 @@ socket.on('status', function(msg, updatedPage = null) {
         }
         displayMedia();
         displayTemplates();
-        if (updatedPage == currentStatus.pageIds[curPage.index]) {
+        if (updatedPage == '[ALL]') {
+            displayPagesBar();
+            curPage.loadCurrentPage();
+            drawPage();           
+        } else if (updatedPage == currentStatus.pageIds[curPage.index]) {
             curPage.loadCurrentPage();
             drawPage();
         }
