@@ -861,7 +861,7 @@ class Project {
     }
 
     // Read project data from file
-    async read() {    // TODO: this can be cleaner, using explicit Promise
+    async read(callback = null) {    // TODO: this can be cleaner, using explicit Promise
         const presentationFile = `${WORKING_DIRECTORY + PRESENTATION_FOLDER + this.name}/index.xml`;
         await fs.readFile(presentationFile)
         .then(async (xml) => {
@@ -876,7 +876,12 @@ class Project {
                 Project.sendProjectsUpdate();
                 this.sendXml();
                 this.triggerPage(-1);   // -1 indicates that root page must be loaded for the first time
-                io.to(this.activeSession).emit('projectReady');
+                if (callback) {
+                    callback({
+                        status: 'OK',
+                        message: `Read ${this.name} project data.`
+                    });
+                }
                 util.log(`Read ${this.name} project data.`);
             } else {
                 this.message(`<p>Probleem bij het lezen van het projectbestand voor presentatie ${this.name}.</p>`);
@@ -921,7 +926,10 @@ class Project {
                     },
                     container: {
                         id: 0,
-                        background: ""
+                        background: "",
+                    },
+                    metadata: {
+                        timestamp: 0
                     }
                 }
             }
@@ -1066,12 +1074,29 @@ class Project {
     }
 
     // Write project data to file
-    async write() {
+    async write(callback = null) {
+        // Insert timstamp for version control
+        const timestamp = Date.now();
+        if (this.data.presentation.metadata) {
+            this.data.presentation.metadata.timestamp = timestamp;
+        } else {
+            this.data.presentation.metadata = {
+                timestamp: timestamp
+            }
+        }
+        // Convert JSON to XML
         const presentationXml = convert.json2xml(this.data, {compact: true, spaces: 4, fullTagEmptyElement: true}).replace(/&amp;/g, '&');
         const name = this.name;
         fs.writeFile(`${WORKING_DIRECTORY + PRESENTATION_FOLDER + this.name}/index.xml`, presentationXml, function(err) {
             if (err) throw err;
             util.log(`Saved ${name} project.`);
+            if (callback) {
+                callback({
+                    status: 'OK',
+                    message: `Saved ${name} project.`,
+                    timestamp: timestamp
+                });
+            }
         });
     }
 
@@ -1102,6 +1127,11 @@ class Project {
         }
         if (this.owner) {
             state.owner = this.owner;
+        }
+        if (this.data.presentation && this.data.presentation.metadata &&  this.data.presentation.metadata.timestamp) {
+            state.timestamp = this.data.presentation.metadata.timestamp;
+        } else {
+            state.timestamp = Date.now();
         }
 
         // When the project has been updated, send the new status to all users
@@ -1235,7 +1265,7 @@ class Project {
     }
 
     // Save edited page
-    async savePage(page, id) {
+    async savePage(page, id, callback) {
 
         const screenShotsLocation = `${WORKING_DIRECTORY + PRESENTATION_FOLDER + this.name}/screenshots/`;            
         // Create screenshots folder if it does not exists    
@@ -1288,7 +1318,7 @@ class Project {
         await this.cleanAssets();
         this.updateState(page.id, false); // The update of the screenshots is taken care of in a separate process TODO: maybe combine in one process
         this.sendXml();
-        this.write();
+        this.write(callback);
         util.log(`Saved page ${page.id}.`);
     }
 
@@ -1371,22 +1401,9 @@ class Project {
         });
     }
 
-    // Swap pages
-    swapPage(pageIndex1, pageIndex2) {
-        util.log(`Swap pages ${pageIndex1} and ${pageIndex2} .`);
-        const temp = this.pageIds[pageIndex1];
-        this.pageIds[pageIndex1] = this.pageIds[pageIndex2];
-        this.pageIds[pageIndex2] = temp;
-        const temp1 = this.data.presentation.container[pageIndex1];
-        this.data.presentation.container[pageIndex1] = this.data.presentation.container[pageIndex2];
-        this.data.presentation.container[pageIndex2] = temp1;
-        this.sendXml();
-        this.write();
-    }
-
     // Move pages
-    movePage(pageIndex1, pageIndex2) {
-        util.log(`Move pages ${pageIndex1} directly behind ${pageIndex2} .`);
+    movePage(pageIndex1, pageIndex2, callback = null) {
+        util.log(`Move pages ${pageIndex1} directly behind ${pageIndex2}.`);
         const temp = this.pageIds[pageIndex1];
         const temp1 = this.data.presentation.container[pageIndex1];
         this.pageIds.splice(pageIndex1, 1);
@@ -1400,18 +1417,27 @@ class Project {
         }
         this.sendXml();
         this.write();
-        this.sendStatus();
-        this.listScreenshots();
+        if (callback) {
+            callback({
+                status: 'OK',
+                message: `Moved page ${pageIndex1} directly behind ${pageIndex2}.`
+            });
+        }
     }
 
     // Delete page
-    deletePage(pageId) {
+    deletePage(pageId, callback = null) {
         util.log(`Delete page ${pageId}.`);
         const screenShotsLocation = `${WORKING_DIRECTORY + PRESENTATION_FOLDER + this.name}/screenshots/`;
         const fileName = `page_${this.pageIds[pageId]}`;
         this.pageIds.splice(pageId, 1);
         this.data.presentation.container.splice(pageId, 1);
-        io.to(this.activeSession).emit('deleted', this.pageIds[pageId]);
+        if (callback) {
+            callback({
+                status: 'OK',
+                message: `Deleted page ${pageId}.`
+            });
+        }
         this.sendXml();
         this.write();
         // Remove template
@@ -1488,7 +1514,7 @@ class Project {
     }
 
     // Save screenshot received from customer
-    saveScreenShot(pageName, base64Data) {
+    saveScreenShot(pageName, base64Data, callback = null) {
         try {
             // Decoding base-64 image
             // Source: http://stackoverflow.com/questions/20267939/nodejs-write-base64-image-file
@@ -1529,11 +1555,13 @@ class Project {
                         if (error) {
                             util.log(`Error saving screenshot thumbnail: ${error}`);
                         }
-                    }));
-                Promise.all(promises)
-                .then(() => {
-                    self.listScreenshots();
-                });
+                        self.listScreenshots();
+                        callback({
+                            pageName: fileName,
+                            filePath: `${PRESENTATION_FOLDER + this.name}/screenshots/${fileName}_small.${imageTypeDetected[1]}`
+                        });
+                    }))
+                Promise.all(promises);
                 if (pageName == this.pageIds[0]) {
                     const projectImagePath = `${screenShotsLocation}project.${imageTypeDetected[1]}`;
                     let self = this;

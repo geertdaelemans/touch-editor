@@ -9,7 +9,8 @@ import History from './lib/History.js';
 let sessionId = null;
 let socket = io();
 let currentStatus = {
-    data: []
+    data: [],
+    timestamp: 0
 };
 let timer;
 const RESOLUTION_OPTIONS = {
@@ -119,19 +120,24 @@ class Page {
         drawPage();
         drawNavigationAids();
     }
-    makeSnapShot() {
-        const pageId = this.index;
+    makeSnapShot(callback = null) {
         const pageName = this.data.id;
         this.template.resetAnimation();
         html2canvas(document.querySelector('#screenshotArea'), { backgroundColor: '#000000', scale: 1 })
         .then(canvasExport => {
             const image = canvasExport.toDataURL('image/png');
-            socket.emit('saveScreenShot', pageName, image);
-            $(`#page_${pageId}`).children('img').attr('src', image);
+            $(`#page_${pageName}`).children('img').attr('src', image);
+            socket.emit('saveScreenShot', pageName, image, (response) => {
+                if (callback) {
+                    $(`#page_${pageName}`).children('img').attr('src', response.filePath);
+                    callback(response);
+                }
+            });
         });        
     }
-    save() {
+    save(callback = null) {
         if (this.index >= 0) {
+            currentStatus.data[curPage.index] = curPage.data;
             // TODO: Move this clean-up to server
             delete this.data.unSaved;
             if (this.data.template == '') {
@@ -154,39 +160,52 @@ class Page {
                 delete this.data.annotate;
             }
             console.log(this.data);
-            socket.emit('savePage', this.data, this.index);
+            socket.emit('savePage', this.data, this.index, (response) => {
+                if (response.status == 'OK') {
+                    currentStatus.timestamp = response.timestamp;
+                    console.log(`Server response: ${response.message}`);
+                } else {
+                    alert(response.message);
+                }
+                if (callback) {
+                    callback(response);
+                }
+            });
             // Sending a screenshot to the server
             this.makeSnapShot();
             this.updated = false;
         }
     }
-    // Swap the order of pages
-    swap(pageIndex1, pageIndex2) {
-        if(this.updated) {
-            this.save();
-        }
-        console.log(`Switch pages ${pageIndex1} and ${pageIndex2}.`);
-        socket.emit('swapPage', pageIndex1, pageIndex2);
-        const temp = currentStatus.pageIds[pageIndex1];
-        currentStatus.pageIds[pageIndex1] = currentStatus.pageIds[pageIndex2];
-        currentStatus.pageIds[pageIndex2] = temp;
-        const temp1 = currentStatus.data[pageIndex1];
-        currentStatus.data[pageIndex1] = currentStatus.data[pageIndex2];
-        currentStatus.data[pageIndex2] = temp1;
-        if (pageIndex1 == this.index) {
-            this.index = pageIndex2;
-        } else if (pageIndex2 == this.index) {
-            this.index = pageIndex1;
-        }
-        displayPagesBar();
-    }
+
     // Move page exactly behind another page
     move(pageIndex1, pageIndex2) {
         if(this.updated) {
             this.save();
         }    
-        console.log(`Move page ${pageIndex1} exactly behind ${pageIndex2}.`);
-        socket.emit('movePage', pageIndex1, pageIndex2);
+        socket.emit('movePage', pageIndex1, pageIndex2, (callback) => {
+            if (callback.status == 'OK') {
+                console.log(`Server response: ${callback.message}`);
+            } else {
+                alert(callback.message);
+            }    
+        });
+        const currentPageName = currentStatus.pageIds[curPage.index];
+        const pageName1 = currentStatus.pageIds[pageIndex1];
+        const pageName2 = currentStatus.pageIds[pageIndex2];
+        const temp = currentStatus.pageIds[pageIndex1];
+        const temp1 = currentStatus.data[pageIndex1];
+        currentStatus.pageIds.splice(pageIndex1, 1);
+        currentStatus.data.splice(pageIndex1, 1);
+        if (pageIndex1 < pageIndex2) {
+            currentStatus.pageIds.splice(pageIndex2, 0, temp);
+            currentStatus.data.splice(pageIndex2, 0, temp1);
+        } else {
+            currentStatus.pageIds.splice(parseInt(pageIndex2) + 1, 0, temp);
+            currentStatus.data.splice(parseInt(pageIndex2) + 1, 0, temp1);
+        }
+        pagesBar.pageIds = currentStatus.pageIds;
+        pagesBar.movePage(pageName1, pageName2);
+        curPage.index = currentStatus.pageIds.indexOf(currentPageName);
     }
     clearLayers() {
         for (let i in this.layers) {
@@ -261,7 +280,26 @@ class Projects {
                 height: 100,
                 width: 250
             });
-            socket.emit('changeProject', name);
+            socket.emit('changeProject', name, (callback) => {
+                if (callback.status == 'OK') {
+                    $('#projectTitle').text(currentStatus.projectName);
+                    toggleRightBar(false);
+                    // Show page info on right side bar
+                    $('#pageInfo').show();
+                    // Show all edit buttons on left side bar
+                    $('#viewerButton').show();
+                    $('#templatesButton').show();    
+                    $('#mediaButton').show();  
+                    $('#networkButton').show();
+                    $('#xmlButton').show();
+                    $('#syncButton').show();
+                    $('#archiveButton').show();
+                    $('#settingsButton').show();
+                    switchToTab('viewer');
+                    popUpMessage();
+                    console.log(`Server response: ${callback.message}`);
+                }
+            });
         });
 
         // Handle right click on project button
@@ -1214,39 +1252,8 @@ function setupCanvas() {
 // Function to add a new page based on a template and with image/video selected
 function addNewPagewWithTemplate(template, imageName) {
     switchToTab('viewer');
-    createPage(template);
-    console.log('template', template);
-    if (template == 'full_foto.json' || template == 'full_video.json' || template == 'doorlezer.json') {
-        curPage.activeAsset = 0;
-        curPage.data.asset[curPage.activeAsset].img = imageName;
-        // Position the media such that it fills the screen and is centered
-        const scaleX = currentStatus.canvasWidth / currentStatus.media[imageName].width;
-        const scaleY = currentStatus.canvasHeight / currentStatus.media[imageName].height;
-        const scale = Math.max(scaleX, scaleY);
-        const overflowX = currentStatus.media[imageName].width * scale - currentStatus.canvasWidth;
-        const overflowY = currentStatus.media[imageName].height * scale - currentStatus.canvasHeight;
-        if (overflowX > 0) {
-            curPage.data.asset[curPage.activeAsset].xpos = -(overflowX / 2).toFixed(0);
-        }
-        if (overflowY > 0) {
-            curPage.data.asset[curPage.activeAsset].ypos = -(overflowY / 2).toFixed(0);
-        }
-        curPage.data.asset[curPage.activeAsset].scale = scale.toFixed(2);
-        if (scale > 1.0) {
-            popUpMessage({
-                title: 'Waarschuwing',
-                text: `<h1>Opgelet: deze video moest opgeschaald worden met een factor ${scale}!</h1>`,
-                ok: true
-            });
-        }
-        curPage.updated = true;
-        drawPage();
-        refreshAsset(curPage.activeAsset);   
-    }
+    pagesBar.addPage(template, imageName);
     $('#popup').hide(100); // Hide popup AFTER the action was triggered
-    const pageId = currentStatus.pageIds[curPage.index].replace(/_/g, ' ');
-    const thumbnail = `${currentStatus.presentationFolder + currentStatus.projectName}/screenshots/${imageName.replace(/\.[^/.]+$/, "")}.png`;
-    $(`#page_${curPage.index}`).html(`<img src="${encodeURIComponent(thumbnail) + '?t=' + new Date().getTime()}" height="80" draggable="false"><br /><div class="pageId">${pageId}</div>`);
 }
 
 // Display list of all media
@@ -1319,7 +1326,7 @@ function displayMedia() {
 
             // Compose the custom menu
             $('#mediaPopup').empty();
-            if (curPage.activeAsset !== null) {
+            if (curPage && curPage.activeAsset !== null) {
                 $('#mediaPopup').append(`<li id="addToAsset">Voeg toe aan asset ${curPage.data.asset[curPage.activeAsset].id}</li>`);
                 // Define callback function
                 $('#addToAsset').off();
@@ -1467,7 +1474,7 @@ function displayTemplates() {
         // Define callback function for applying template to a new page
         $('#new').on('click', function() {
             $('#popup').hide(100); // Hide dropdown menu
-            createPage();
+            pagesBar.addPage();
         });
 
         // Define callback function for applying template to current page
@@ -1511,7 +1518,7 @@ function displayTemplates() {
             // Define callback function for applying template to a new page
             $('#new').on('click', function() {
                 $('#popup').hide(100); // Hide dropdown menu
-                createPage(templateName);
+                pagesBar.addPage(templateName);
             });
 
             // Define callback function for applying template to current page
@@ -1535,6 +1542,10 @@ function displayTemplates() {
 // Switch page (no server fetch)
 // When trigger is true, this sends out a trigger to all browsers of this user
 function switchPage(page, trigger=true) {
+    // Clear canvas
+    $('#videoControl').hide();
+    curPage.activeAsset = null;    // Disable active asset highlight
+
     // Replace placeholders
     let pageId = -1;
     if (page == '[NEXT]') {
@@ -1574,10 +1585,6 @@ function switchPage(page, trigger=true) {
     // Update history
     history.addPageToHistory(pageId);
 
-    // Clear canvas
-    $('#videoControl').hide();
-    curPage.activeAsset = null;    // Disable active asset highlight
-
     // Make sure unsaved changes get saved
     if (curPage.updated) {
         curPage.save();
@@ -1594,7 +1601,8 @@ function switchPage(page, trigger=true) {
         socket.emit('triggerPage', pageId);
     }
     // Set active page in Page Sequence
-    $('#page_' + pageId).parents('#pages').find('.active').removeClass('active').end().end().addClass('active');
+    const pageName = currentStatus.pageIds[pageId];
+    $(`#page_${pageName}`).parents('#pages').find('.active').removeClass('active').end().end().addClass('active');
     // Prepare template
     curPage.template = new Template();
 
@@ -1617,81 +1625,6 @@ function switchPage(page, trigger=true) {
 // Enable the iframe page to access the switchPage function
 window.switchPage = switchPage;
 window.toggleRightBar = toggleRightBar;
-
-// Create a new page
-function createPage(templateName) {
-    // First make sure unsaved changes get saved
-    if (curPage.updated) {
-        curPage.save();
-    }
-    // Attaching the page to the end of the page list,
-    // so the index is equal to the length of the list.
-    const newIndex = currentStatus.pageIds.length;
-    // Make sure the pageName is not yet in use, otherwise keep incrementing.
-    let pageName = newIndex;
-    while (currentStatus.pageIds.indexOf(pageName.toString()) != -1) {
-        pageName++;
-    }
-    // Create an empty page
-    let page = {
-        id: pageName.toString(),
-        unSaved: true
-    }
-    if (templateName) {
-        page.template = templateName;
-    }
-    // Add page to the currentStatus memory
-    currentStatus.data.push(page);
-    currentStatus.pageIds.push(page.id);
-    // get page cache updated
-    curPage.index = newIndex;
-    // Clear the template
-    curPage.template = new Template();
-    if (templateName) {
-        curPage.template.setTemplate(templateName);
-    }
-    curPage.updated = true;
-    // Draw the page as is
-    drawPage();
-    switchToTab('viewer');
-    // Show page information   
-    $('#assetInfo').hide();
-    showPageInfo();
-    toggleRightBar(true);
-    // Show Pages Bar
-    displayPagesBar();
-    curPage.makeSnapShot();
-}
-
-// Delete page
-function deletePage(pageIndex) {
-    // First make sure unsaved changes get saved
-    if (curPage.updated) {
-        curPage.save();
-    }
-    currentStatus.pageIds.splice(pageIndex, 1);
-    currentStatus.data.splice(pageIndex, 1);
-    socket.emit('deletePage', pageIndex);
-    // Check for case where current page is updated and being deleted
-    // avoiding the trigger that makes saves the page first
-    if (pageIndex == curPage.index && curPage.updated) {
-        curPage.updated = false;
-    }
-    if (pageIndex < curPage.index) {
-        curPage.index--;
-    } else if (pageIndex == curPage.index) {
-        if (pageIndex >= currentStatus.pageIds.length) {
-            curPage.index--;
-        }
-        // Check if all pages were deleted
-        if (curPage.index < 0) {
-            curPage.reset();
-        } else {
-            switchPage(currentStatus.pageIds[curPage.index]);
-        }
-    }
-    displayPagesBar();
-}
 
 // Add dropdown menu to select a page
 function createPageSelector(selectorName, target) {
@@ -1935,12 +1868,14 @@ function showPageInfo() {
 
     // Activate all listeners
     $('#id').on('change keyup focusout', function(event) {
-        let newId = $(this).val().replace(/ /g, '_');
+        const pageName = currentStatus.pageIds[curPage.index];
+        const newId = $(this).val().replace(/ /g, '_');
         // When user acknowledges the change, do a check for existing names
         if (event.type == 'change' || event.type == 'focusout') {
             if (currentStatus.pageIds.indexOf(newId) == -1 || newId == curPage.data.id) {
                 curPage.data.id = newId;
                 curPage.updated = true;
+                pagesBar.renamePage(pageName, newId);
             } else {
                 // Warn the user that name is already in use
                 $(this).val(curPage.data.id);
@@ -1954,7 +1889,7 @@ function showPageInfo() {
         } else {
             // Update the fields after each keyup
             curPage.updated = true;
-            $(`#page_${curPage.index}`).children('.pageId').html($(this).val());
+            $(`#page_${pageName}`).children('.pageId').html($(this).val());
         }
     });
     $('#html').on('change', function() {
@@ -2723,7 +2658,7 @@ class Template {
                     delete curPage.data.filePath;
                     if (currentStatus.templates[templateId].fields) {
                         this.fields = $.extend(true, {}, currentStatus.templates[templateId].fields);
-                     }
+                    }
                     break;
                 }
             }
@@ -3179,170 +3114,414 @@ function refreshAsset(assetId) {
     }
 }
 
-// Display pages bar
-function displayPagesBar(singlePage = null) {
-    console.log(`Refresh displayPagesBar ${singlePage}.`);
-    if (singlePage) {
-        if (singlePage == '-1') singlePage = '0';
-        let pageId = currentStatus.pageIds[singlePage].replace(/_/g, ' ');
-        const thumbnail = 'page_' + currentStatus.pageIds[singlePage] + '_small.png';
-        $(`#page_${singlePage}`).html(`<img src="${encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail) + '?t=' + new Date().getTime()}" height="80" draggable="false"><br /><div class="pageId">${pageId}</div>`);
-        return;
+class PagesBar {
+    constructor() {
+        this._pageIds = [];
+        this._screenshots = {};
     }
-    $('#pages').empty();
-    for (let page in currentStatus.pageIds) {
 
-        // Add page IDs to bar
-        let pageIndex = page;
-        let pageId = currentStatus.pageIds[page].replace(/_/g, ' ');
-        let thumbnail = 'page_' + currentStatus.pageIds[page] + '_small.png';
-        if (thumbnail in currentStatus.screenshots) {
-            $('#pages').append('<li><a id = "page_' + pageIndex + '" href="#top" draggable="false"><img src="' + encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail) + '?t=' + new Date().getTime() + '" height="80" draggable="false"><br /><div class="pageId">' + pageId + '</div></a></li> ');
-        } else {
-            $('#pages').append('<li><a id = "page_' + pageIndex + '" href="#top" draggable="false"><div id="pageId">' + pageId + '</div></a></li> ');
-        }
-        if (pageId == currentStatus.pageIds[curPage.index]) {
-            $('#page_' + pageIndex).addClass('active');
-        }
+    // Getters and setters
+    get pageIds() {
+        return this._pageIds;
+    }
+    get screenshots() {
+        return this._screenshots;
+    }
+    set pageIds(value) {
+        this._pageIds = value;
+    }
+    set screenshots(value) {
+        this._screenshots = value;
+    }
+
+    addPageTriggers(pageName) {
+        const pageIndex = this.pageIds.indexOf(pageName);
+        const self = this;
 
         // Add listener to switch page
-        $('#page_' + pageIndex).on('click', function(event) {
+        $(`#page_${pageName}`).off('click');
+        $(`#page_${pageName}`).on('click', function(event) {
             event.preventDefault();
-            switchPage(currentStatus.pageIds[pageIndex]);
+            switchPage(pageName);
             toggleRightBar(false);
         });
 
         // Add listener for right-click
-        $('#page_' + pageIndex).on('contextmenu', function(event) {
+        $(`#page_${pageName}`).off('contextmenu');
+        $(`#page_${pageName}`).on('contextmenu', function(event) {
             // Avoid standard context menu
             event.preventDefault();
+            $('#popup').html('');
 
             // Compose the custom menu
-            $('#popup').html(`<li class="disabled">Verplaats ${currentStatus.pageIds[pageIndex]}</li>`);
-            for (let i in currentStatus.pageIds) {
-                if (i != pageIndex && i != (pageIndex - 1)) {
-                    $('#popup').append(`<li id="na${i}">Na ${currentStatus.pageIds[i]}</li>`);
-                    $(`#na${i}`).off();
-                    $(`#na${i}`).on('click', function() {
+            if (self.pageIds.length > 1) {
+                $('#popup').append(`<li class="disabled">Verplaats ${pageName.replace(/_/g, ' ')}</li>`);
+                if (pageIndex > 0) {
+                    $('#popup').append(`<li id="vooraan">Vooraan</li>`);
+                    $(`#vooraan`).off();
+                    $(`#vooraan`).on('click', function() {
                         $('#popup').hide(100); // Hide dropdown menu
-                        curPage.move(pageIndex, i);
+                        curPage.move(pageIndex, -1);
                     });
                 }
+                for (let i in self.pageIds) {
+                    if (i != pageIndex && i != (pageIndex - 1)) {
+                        if (i < self.pageIds.length - 1) {
+                            $('#popup').append(`<li id="na${i}">Na ${self.pageIds[i].replace(/_/g, ' ')}</li>`);
+                        } else {
+                            $('#popup').append(`<li id="na${i}">Achteraan</li>`);
+                        }
+                        $(`#na${i}`).off();
+                        $(`#na${i}`).on('click', function() {
+                            $('#popup').hide(100); // Hide dropdown menu
+                            curPage.move(pageIndex, i);
+                        });
+                    }
+                }
+                $('#popup').append('<li class="disabled"></li>');
+                if (pageIndex < self.pageIds.length - 1) {
+                    $('#popup').append('<li id="moveRight"><i class="fas fa-arrow-right"></i> Naar rechts</li>');
+                }
+                if (pageIndex > 0) {
+                    $('#popup').append('<li id="moveLeft"><i class="fas fa-arrow-left"></i> Naar links</li>');
+                }
+                $('#popup').append('<li class="disabled"></li>');
             }
-            $('#popup').append('<li class="disabled"></li>');
-            if (pageIndex < currentStatus.pageIds.length - 1) {
-                $('#popup').append('<li id="moveRight"><i class="fas fa-arrow-right"></i> Naar rechts</li>');
-            }
-            if (pageIndex > 0) {
-                $('#popup').append('<li id="moveLeft"><i class="fas fa-arrow-left"></i> Naar links</li>');
-            }
-            $('#popup').append('<li class="disabled"></li>');
             $('#popup').append('<li id="delete"><i class="fa fa-trash" aria-hidden="true"></i> Verwijder</li>');
+
             // Show contextmenu
             $('#popup').finish().toggle(100).
 
             // In the right position (the mouse)
             css({
-                top: (Number(event.pageY) - $('#menu-bar').height() - (currentStatus.pageIds.length + 2) * 41) + "px",
+                top: (Number(event.pageY) - $('#menu-bar').height() - ((self.pageIds.length > 1 ? self.pageIds.length + 2 : 1)) * 41) + "px",
                 left: (Number(event.pageX) - $('#sidebar-left').width()) + "px"
             });
 
             // Define callback function moving current page to the left
             $('#moveLeft').on('click', function() {
                 $('#popup').hide(100); // Hide dropdown menu
-                curPage.swap(pageIndex, Number(pageIndex) - 1);
+                curPage.move(pageIndex, Number(pageIndex) - 2);
             });
 
             // Define callback function moving current page to the right
             $('#moveRight').on('click', function() {
                 $('#popup').hide(100); // Hide dropdown menu
-                curPage.swap(pageIndex, Number(pageIndex) + 1);
+                curPage.move(pageIndex, Number(pageIndex) + 1);
             });
 
             // Define callback function for applying template to a new page
             $('#delete').on('click', function() {
                 $('#popup').hide(100); // Hide dropdown menu
-                deletePage(pageIndex);
+                pagesBar.deletePage(pageName);
             });
+        });        
+    }
+
+    addAllPageTriggers() {
+        for (let i in this.pageIds) {
+            this.addPageTriggers(this.pageIds[i]);
+        }
+    }
+
+    setup() {
+        $('#pages').empty();
+        for (let pageIndex in this.pageIds) {
+            
+            // Add page IDs to bar
+            const pageName = this.pageIds[pageIndex];
+            const thumbnail = `page_${pageName}_small.png`;
+            let imagePath = '';
+            let self = this;
+            if (thumbnail in currentStatus.screenshots) {
+                imagePath = encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail);
+            }
+            $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
+
+            if (pageName == this.pageIds[curPage.index]) {
+                $(`#page_${pageName}`).addClass('active');
+            }
+            
+            // Add listener for right-click
+            this.addPageTriggers(pageName);
+        }
+
+        // Add page button
+        $('#pages').append('<li id="block_x"><a id = "page_x" href="#top" draggable="false"><img src="/img/add-icon.png" height="80" draggable="false"><br />&nbsp;</a></li>');
+
+        // Add listener to Add Page button
+        $('#page_x').on('click', function() {
+            // createPage();
+            switchToTab('media');
+        });
+
+        // Disable drag over actions
+        $('#page_x').on('dragover', function(event) {
+            event.preventDefault();
+        });
+
+        $('#page_x').on('drop', function(event) {
+            event.stopPropagation();
+            const data = "image_" + event.originalEvent.dataTransfer.getData('text').split('_')[1];
+            const imageName = document.getElementById(data).dataset.value;
+
+            // Compose the custom menu
+            // Create full video template and add video
+            $('#popup').empty();
+            if (isVideo(imageName)) {
+                $('#popup').append('<li id="fullVideo">Full video</li>');
+                $('#fullVideo').on('click', function() {
+                    addNewPagewWithTemplate('full_video.json', imageName);
+                    $('#popup').hide(100); // Hide it AFTER the action was triggered
+                });
+                // Create doorlezer video template and add video
+                $('#popup').append('<li id="doorlezerVideo">Doorlezer</li>');
+                $('#doorlezerVideo').on('click', function() {
+                    addNewPagewWithTemplate('doorlezer.json', imageName);
+                    $('#popup').hide(100); // Hide it AFTER the action was triggered
+                });
+            } else {
+                $('#popup').append('<li id="fullPhoto">Full foto</li>');
+                $('#fullPhoto').on('click', function() {
+                    addNewPagewWithTemplate('full_foto.json', imageName);
+                    $('#popup').hide(100); // Hide it AFTER the action was triggered
+                });         
+            }
+
+            // Show contextmenu
+            $('#popup').finish().toggle(100).
+
+            // In the right position (the mouse)
+            css({
+                top: (Number(event.pageY) - $('#menu-bar').height()) + "px",
+                left: (Number(event.pageX) - $('#sidebar-left').width()) + "px"
+            });
+        });
+
+        // Scroll page bar
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        $('#pages').on('mousedown', (event) => {
+            startX = event.pageX - $('#pages')[0].offsetLeft;
+            scrollLeft = $('#pages')[0].scrollLeft;
+            isDown = true;
+        });
+        $('#pages').on('mouseup mouseleave', () => {
+            isDown = false;
+            $('#pages').removeClass('scrolling');
+        });    
+        $('#pages').on('mousemove', (event) => {
+            if (!isDown) return;
+            event.preventDefault();
+            const x = event.pageX - $('#pages')[0].offsetLeft;
+            const walk = (x - startX) * 3;
+            if (Math.abs(x - startX) > 10) {
+                $('#pages').addClass('scrolling');
+                $('#pages')[0].scrollLeft = scrollLeft - walk;
+            }
         });
     }
 
-    // Add page button
-    $('#pages').append('<li><a id = "page_x" href="#top" draggable="false"><img src="/img/add-icon.png" height="80" draggable="false"><br />&nbsp;</a></li>');
+    update(newScreenshots) {
+        // Check which thumbnails have been updated
+        let updatedPages = [];
+        for (let name in newScreenshots) {
+            // Compare the timeStamps
+            if (this.screenshots && 
+                this.screenshots[name] && 
+                this.screenshots[name] != newScreenshots[name]) {
+                updatedPages.push(name.slice(5, -10));
+            }
+        }
+        this.screenshots = newScreenshots;
+        // Start updating the thumbnails
+        for (let i in updatedPages) {
+            const pageName = updatedPages[i];
+            const thumbnail = `page_${pageName}_small.png`;
+            const imagePath = `${encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail)}?t=${new Date().getTime()}`;
+            $(`#page_${pageName}`).children('img').attr('src', imagePath);
+        }
+        if (updatedPages.length > 0) {
+            console.log(`Updated thumbnail(s): ${updatedPages}`);
+        }
+    }
 
-    // Add listener to Add Page button
-    $('#page_x').on('click', function() {
-        // createPage();
-        switchToTab('media');
-    });
+    addPage(templateName = null, imageName = null) {
+        // First make sure unsaved changes get saved
+        if (curPage.updated) {
+            curPage.save();
+        }
 
-    // Disable drag over actions
-    $('#page_x').on('dragover', function(event) {
-        event.preventDefault();
-    });
+        // Attaching the page to the end of the page list,
+        // so the index is equal to the length of the list.
+        const newIndex = this.pageIds.length;
 
-    $('#page_x').on('drop', function(event) {
-        event.stopPropagation();
-        const data = "image_" + event.originalEvent.dataTransfer.getData('text').split('_')[1];
-        const imageName = document.getElementById(data).dataset.value;
+        // Make sure the pageName is not yet in use, otherwise keep incrementing.
+        let pageName = newIndex;
+        while (this.pageIds.indexOf(pageName.toString()) != -1) {
+            pageName++;
+        }
+        this.pageIds.push(pageName.toString());
+        
+        // Create an empty page container in memory
+        let page = {
+            id: pageName.toString(),
+            unSaved: true
+        }
+        if (templateName) {
+            page.template = templateName;
+        }
+        currentStatus.data.push(page);
 
-        // Compose the custom menu
-        // Create full video template and add video
-        $('#popup').empty();
-        if (isVideo(imageName)) {
-            $('#popup').append('<li id="fullVideo">Full video</li>');
-            $('#fullVideo').on('click', function() {
-                addNewPagewWithTemplate('full_video.json', imageName);
-                $('#popup').hide(100); // Hide it AFTER the action was triggered
-            });
-            // Create doorlezer video template and add video
-            $('#popup').append('<li id="doorlezerVideo">Doorlezer</li>');
-            $('#doorlezerVideo').on('click', function() {
-                addNewPagewWithTemplate('doorlezer.json', imageName);
-                $('#popup').hide(100); // Hide it AFTER the action was triggered
+        // Prepare page cache entry
+        curPage.index = newIndex;
+        if (templateName) {
+            // Clear the template
+            curPage.template = new Template();
+            curPage.template.setTemplate(templateName);
+            // Check if image/video has been provided
+            if (imageName != null) {
+                // Check if assets are available in the template. If so, then
+                // the first asset gets updated with the given image/video
+                if (curPage.data.asset) {
+                    curPage.activeAsset = 0;
+                    curPage.data.asset[curPage.activeAsset].img = imageName;
+                    // Position the media such that it fills the screen and is centered
+                    const scaleX = currentStatus.canvasWidth / currentStatus.media[imageName].width;
+                    const scaleY = currentStatus.canvasHeight / currentStatus.media[imageName].height;
+                    const scale = Math.max(scaleX, scaleY);
+                    const overflowX = currentStatus.media[imageName].width * scale - currentStatus.canvasWidth;
+                    const overflowY = currentStatus.media[imageName].height * scale - currentStatus.canvasHeight;
+                    if (overflowX > 0) {
+                        curPage.data.asset[curPage.activeAsset].xpos = -(overflowX / 2).toFixed(0);
+                    }
+                    if (overflowY > 0) {
+                        curPage.data.asset[curPage.activeAsset].ypos = -(overflowY / 2).toFixed(0);
+                    }
+                    curPage.data.asset[curPage.activeAsset].scale = scale.toFixed(2);
+                    if (scale > 1.0) {
+                        popUpMessage({
+                            title: 'Waarschuwing',
+                            text: `<h1>Opgelet: deze video moest opgeschaald worden met een factor ${scale}!</h1>`,
+                            ok: true
+                        });
+                    }
+                    refreshAsset(curPage.activeAsset);
+                }
+            }
+        }
+
+        // Do we need this?
+        //currentStatus.data[curPage.index] = curPage.data;
+        curPage.updated = true;
+
+        // Draw the page as is
+        drawPage();
+        switchToTab('viewer');
+
+        // Show page information   
+        $('#assetInfo').hide();
+        showPageInfo();
+        toggleRightBar(true);
+
+        // Make snapshot
+        setTimeout(function () {
+            curPage.makeSnapShot();
+        }, 1000);
+
+        // Add new page to pages bar
+        let imagePath = '/img/empty_page.png';
+
+        // Search for snapshot
+        let templateId = -1;
+        for (let i in currentStatus.templates) {
+            if (currentStatus.templates[i].template == templateName) {
+                templateId = i;
+                break;
+            }
+        }
+        if (templateId != -1) {
+            imagePath = encodeURIComponent(currentStatus.templates[templateId].filePath + currentStatus.templates[templateId].template.substr(0, currentStatus.templates[templateId].template.lastIndexOf('.')) + '.png');
+        }
+
+        // Display page in pages bar
+        $(`#block_x`).before(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div class="pageId">${pageName.toString().replace(/_/g, ' ')}</div></a></li>`).fadeIn();
+
+        // Make new page active
+        $(`#page_${pageName}`).parents('#pages').find('.active').removeClass('active').end().end().addClass('active');
+
+        // Reapply all page triggers
+        this.addAllPageTriggers();        
+    }
+
+    deletePage(pageName) {
+        // First make sure unsaved changes get saved (but ignoring the page to be deleted)
+        if (curPage.updated) {
+            if (curPage.id != pageName) {
+                curPage.save();
+            } else {
+                curPage.updated = false;
+            }
+        }
+
+        // Effectively delete the page and send request to server
+        const pageIndex = this.pageIds.indexOf(pageName);
+        this.pageIds.splice(pageIndex, 1);
+        currentStatus.data.splice(pageIndex, 1);
+        socket.emit('deletePage', pageIndex, (callback) => {
+            if (callback.status == 'OK') {
+                console.log(`Server response: ${callback.message}`);
+            } else {
+                alert(callback.message);
+            }    
+        });
+
+        // Calculate where the currently active page is located
+        if (pageIndex < curPage.index) {
+            curPage.index--;
+        } else if (pageIndex == curPage.index) {
+            if (pageIndex >= this.pageIds.length) {
+                curPage.index--;
+            }
+            // Check if all pages were deleted
+            if (curPage.index < 0) {
+                curPage.reset();
+            } else {
+                switchPage(this.pageIds[curPage.index]);
+            }
+        }
+
+        // Remove button from bar
+        $(`#block_${pageName}`).fadeOut(function() {
+            $(this).remove();
+        });
+    }
+
+    renamePage(oldName, newName) {
+        $(`#block_${oldName}`).attr("id", `block_${newName}`);
+        $(`#page_${oldName}`).attr("id", `page_${newName}`);
+        this.pageIds[this.pageIds.indexOf(oldName)] = newName;
+        this.addAllPageTriggers();
+    }
+
+    movePage(pageName1, pageName2) {
+        if (pageName2 == undefined) {
+            $(`#block_${pageName1}`).fadeOut();
+            $(`#block_${pageName1}`).promise().done(function() {
+                $('#pages').prepend($(`#block_${pageName1}`));
+                $(`#block_${pageName1}`).fadeIn();
             });
         } else {
-            $('#popup').append('<li id="fullPhoto">Full foto</li>');
-            $('#fullPhoto').on('click', function() {
-                addNewPagewWithTemplate('full_foto.json', imageName);
-                $('#popup').hide(100); // Hide it AFTER the action was triggered
-            });         
+            $(`#block_${pageName1}`).fadeOut();
+            $(`#block_${pageName1}`).promise().done(function() {
+                $(`#block_${pageName1}`).insertAfter(`#block_${pageName2}`).fadeIn();
+            });
         }
-
-        // Show contextmenu
-        $('#popup').finish().toggle(100).
-
-        // In the right position (the mouse)
-        css({
-            top: (Number(event.pageY) - $('#menu-bar').height()) + "px",
-            left: (Number(event.pageX) - $('#sidebar-left').width()) + "px"
-        });
-    });
-
-    // Scroll page bar
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-    $('#pages').on('mousedown', (event) => {
-        startX = event.pageX - $('#pages')[0].offsetLeft;
-        scrollLeft = $('#pages')[0].scrollLeft;
-        isDown = true;
-    });
-    $('#pages').on('mouseup mouseleave', () => {
-        isDown = false;
-        $('#pages').removeClass('scrolling');
-    });    
-    $('#pages').on('mousemove', (event) => {
-        if (!isDown) return;
-        event.preventDefault();
-        const x = event.pageX - $('#pages')[0].offsetLeft;
-        const walk = (x - startX) * 3;
-        if (Math.abs(x - startX) > 10) {
-            $('#pages').addClass('scrolling');
-            $('#pages')[0].scrollLeft = scrollLeft - walk;
-        }
-    });
+        this.addAllPageTriggers();
+    }
 }
+const pagesBar = new PagesBar();
 
 socket.on('connect', function() {
     sessionId = getCookie('sessionId');
@@ -3402,28 +3581,38 @@ socket.on('status', function(msg, updatedPage = null) {
 
             // Set scale to null in order to trigger zoomToFit
             canvas.scale = null;
-        }
-        currentStatus = msg;
 
-        // Exception when pages were deleted
-        if (curPage.index >= currentStatus.numberOfPages) {
-            curPage.index = 0;
+            currentStatus.timestamp = 0;
         }
-        setupCanvas();
-        if (showPagesBar) {
-            displayPagesBar();
+
+        console.log('currentStatus.timestamp', currentStatus.timestamp);
+        console.log('msg.timestamp', msg.timestamp);
+        if (parseInt(currentStatus.timestamp) < parseInt(msg.timestamp)) {
+            console.log('Currentstatus updated');
+            currentStatus = msg;
+
+            // Exception when pages were deleted
+            if (curPage.index >= currentStatus.numberOfPages) {
+                curPage.index = 0;
+            }
+            setupCanvas();
+            pagesBar.pageIds = currentStatus.pageIds;
+            pagesBar.screenshots = currentStatus.screenshots;
+            if (showPagesBar) {
+                pagesBar.setup();
+            }
+            displayMedia();
+            displayTemplates();
+            if (updatedPage == '[ALL]') {
+                pagesBar.setup();
+                curPage.loadCurrentPage();
+                drawPage();           
+            } else if (updatedPage == currentStatus.pageIds[curPage.index]) {
+                curPage.loadCurrentPage();
+                drawPage();
+            }
+            network.calculateNetwork(currentStatus);
         }
-        displayMedia();
-        displayTemplates();
-        if (updatedPage == '[ALL]') {
-            displayPagesBar();
-            curPage.loadCurrentPage();
-            drawPage();           
-        } else if (updatedPage == currentStatus.pageIds[curPage.index]) {
-            curPage.loadCurrentPage();
-            drawPage();
-        }
-        network.calculateNetwork(currentStatus);
     } else {
         if (!pagePrepared) {
             console.log('Not ready yet...');
@@ -3486,20 +3675,10 @@ socket.on('dropfolder', (videoName, videoData) => {
     displayMedia();
 });
 
-socket.on('screenshots', function(screenshots) {
-    let exclusive = null
-    for (let name in screenshots) {
-        // Compare the timeStamps
-        if (currentStatus.screenshots && 
-            currentStatus.screenshots[name] && 
-            currentStatus.screenshots[name] != screenshots[name]) {
-            exclusive = currentStatus.pageIds.indexOf(name.slice(5, -10));
-            break;
-        }
-    }
+socket.on('screenshots2', function(screenshots) {
     currentStatus.screenshots = screenshots;
     if ($('#pages').is(':visible')) {
-        displayPagesBar(exclusive);
+        pagesBar.update(screenshots);
     }
     network.calculateNetwork(currentStatus);
 });
@@ -3507,13 +3686,6 @@ socket.on('screenshots', function(screenshots) {
 socket.on('page', function(page) {
     if(page != curPage.index) {
         switchPage(currentStatus.pageIds[page >= 0 ? page : 0], false);
-    }
-});
-
-socket.on('deleted', function(page) {
-    const index = currentStatus.pageIds.indexOf(page);
-    if (index != -1) {
-        currentStatus.pageIds.splice(index, 1);
     }
 });
 

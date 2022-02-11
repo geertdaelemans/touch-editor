@@ -320,13 +320,13 @@ io.on('connection', function(socket) {
     });
 
     // Client asks for project
-	socket.on('changeProject', function(projectName) {
+	socket.on('changeProject', function(projectName, callback) {
         try {
             if (projectArray[accounts[socket.id].name]) {
                 Project.removeUser(accounts[socket.id].name, projectArray[accounts[socket.id].name].name);
             }
             projectArray[accounts[socket.id].name].name = projectName;
-            projectArray[accounts[socket.id].name].read();
+            projectArray[accounts[socket.id].name].read(callback);
             Project.addUser(accounts[socket.id].name, projectName);
             Project.getUserList();
         } catch(error) {
@@ -374,11 +374,16 @@ io.on('connection', function(socket) {
     });
 
     // Client saves page data (including assets)
-	socket.on('savePage', function(page, id, snapShot) {
+	socket.on('savePage', function(page, id, callback) {
         try {
-            projectArray[accounts[socket.id].name].savePage(page, id);
+            projectArray[accounts[socket.id].name].savePage(page, id, callback);
         } catch(error) {
             util.log(`Error during saving of page: ${error}`);
+            callback({
+                status: 'ERROR',
+                message: `Error saving page ${id}.`,
+                error: error
+            });
         }   
     });
 
@@ -391,28 +396,19 @@ io.on('connection', function(socket) {
         }   
     });
 
-    // Client swaps pages
-	socket.on('swapPage', function(pageId1, pageId2) {
+    // Client move pages
+	socket.on('movePage', function(pageId1, pageId2, callback) {
         try {
-            projectArray[accounts[socket.id].name].swapPage(pageId1, pageId2);
-        } catch(error) {
-            util.log(`Error during swapping of pages: ${error}`);
-        }   
-    });
-
-        // Client swaps pages
-	socket.on('movePage', function(pageId1, pageId2) {
-        try {
-            projectArray[accounts[socket.id].name].movePage(pageId1, pageId2);
+            projectArray[accounts[socket.id].name].movePage(pageId1, pageId2, callback);
         } catch(error) {
             util.log(`Error during moving of pages: ${error}`);
         }   
     });
 
     // Client deletes page
-	socket.on('deletePage', function(pageId) {
+	socket.on('deletePage', function(pageId, callback) {
         try {
-            projectArray[accounts[socket.id].name].deletePage(pageId);
+            projectArray[accounts[socket.id].name].deletePage(pageId, callback);
         } catch(error) {
             util.log(`Error during deleting of page: ${error}`);
         } 
@@ -455,9 +451,9 @@ io.on('connection', function(socket) {
     });
 
     // Client sends screenshot
-    socket.on('saveScreenShot', function(id, data) {
+    socket.on('saveScreenShot', function(pageName, data, callback) {
         try {
-            projectArray[accounts[socket.id].name].saveScreenShot(id, data);
+            projectArray[accounts[socket.id].name].saveScreenShot(pageName, data, callback);
         } catch(error) {
             util.log(`Error during saving of screenshot: ${error}`);
         } 
