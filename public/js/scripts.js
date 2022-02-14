@@ -1249,13 +1249,6 @@ function setupCanvas() {
     }
 }
 
-// Function to add a new page based on a template and with image/video selected
-function addNewPagewWithTemplate(template, imageName) {
-    switchToTab('viewer');
-    pagesBar.addPage(template, imageName);
-    $('#popup').hide(100); // Hide popup AFTER the action was triggered
-}
-
 // Display list of all media
 function displayMedia() {
     let formString = '<div id="mediaLocal"></div>';
@@ -1346,14 +1339,14 @@ function displayMedia() {
                 // Create full video template and add video
                 $("#mediaPopup").append('<li id="fullVideo">Full video</li>');
                 $('#fullVideo').on('click', function() {
-                    addNewPagewWithTemplate('full_video.json', imageName);
+                    pagesBar.addPage('full_video.json', imageName);
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
                 });
                 // Create doorlezer video template and add video
                 $("#mediaPopup").append('<li id="doorlezerVideo">Doorlezer</li>');
                 $('#doorlezerVideo').on('click', function() {
-                    addNewPagewWithTemplate('doorlezer.json', imageName);
+                    pagesBar.addPage('doorlezer.json', imageName);
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
                 });    
@@ -1361,7 +1354,7 @@ function displayMedia() {
                 // Create full photo template and add video
                 $("#mediaPopup").append('<li id="fullPhoto">Full foto</li>');
                 $('#fullPhoto').on('click', function() {
-                    addNewPagewWithTemplate('full_video.json', imageName);
+                    pagesBar.addPage('full_video.json', imageName);
                     $('#mediaPopup').hide(100); // Hide it AFTER the action was triggered
                     $('#tab-media').dialog('close'); // Close Media window
                 });             
@@ -3213,7 +3206,7 @@ class PagesBar {
             // Define callback function for applying template to a new page
             $('#delete').on('click', function() {
                 $('#popup').hide(100); // Hide dropdown menu
-                pagesBar.deletePage(pageName);
+                self.deletePage(pageName);
             });
         });        
     }
@@ -3225,6 +3218,7 @@ class PagesBar {
     }
 
     setup() {
+        const self = this;
         $('#pages').empty();
         for (let pageIndex in this.pageIds) {
             
@@ -3232,7 +3226,6 @@ class PagesBar {
             const pageName = this.pageIds[pageIndex];
             const thumbnail = `page_${pageName}_small.png`;
             let imagePath = '';
-            let self = this;
             if (thumbnail in currentStatus.screenshots) {
                 imagePath = encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail);
             }
@@ -3251,7 +3244,6 @@ class PagesBar {
 
         // Add listener to Add Page button
         $('#page_x').on('click', function() {
-            // createPage();
             switchToTab('media');
         });
 
@@ -3271,19 +3263,19 @@ class PagesBar {
             if (isVideo(imageName)) {
                 $('#popup').append('<li id="fullVideo">Full video</li>');
                 $('#fullVideo').on('click', function() {
-                    addNewPagewWithTemplate('full_video.json', imageName);
+                    self.addPage('full_video.json', imageName);
                     $('#popup').hide(100); // Hide it AFTER the action was triggered
                 });
                 // Create doorlezer video template and add video
                 $('#popup').append('<li id="doorlezerVideo">Doorlezer</li>');
                 $('#doorlezerVideo').on('click', function() {
-                    addNewPagewWithTemplate('doorlezer.json', imageName);
+                    self.addPage('doorlezer.json', imageName);
                     $('#popup').hide(100); // Hide it AFTER the action was triggered
                 });
             } else {
                 $('#popup').append('<li id="fullPhoto">Full foto</li>');
                 $('#fullPhoto').on('click', function() {
-                    addNewPagewWithTemplate('full_foto.json', imageName);
+                    self.addPage('full_foto.json', imageName);
                     $('#popup').hide(100); // Hide it AFTER the action was triggered
                 });         
             }
