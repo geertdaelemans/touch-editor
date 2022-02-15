@@ -133,7 +133,7 @@ class Page {
                     callback(response);
                 }
             });
-        });        
+        });
     }
     save(callback = null) {
         if (this.index >= 0) {
@@ -1865,20 +1865,10 @@ function showPageInfo() {
         const newId = $(this).val().replace(/ /g, '_');
         // When user acknowledges the change, do a check for existing names
         if (event.type == 'change' || event.type == 'focusout') {
-            if (currentStatus.pageIds.indexOf(newId) == -1 || newId == curPage.data.id) {
-                curPage.data.id = newId;
-                curPage.updated = true;
-                pagesBar.renamePage(pageName, newId);
-            } else {
-                // Warn the user that name is already in use
+            if (!pagesBar.renamePage(pageName, newId)) {
                 $(this).val(curPage.data.id);
-                popUpMessage({
-                    title: 'Probleem',
-                    text: '<h3>Naam reeds in gebruik</h3><p>Voer een andere naam in.</p>',
-                    modal: true,
-                    ok: true 
-                });
-            }
+                $(`#page_${pageName}`).children('.pageId').html(pageName);
+            };
         } else {
             // Update the fields after each keyup
             curPage.updated = true;
@@ -3229,7 +3219,7 @@ class PagesBar {
             if (thumbnail in currentStatus.screenshots) {
                 imagePath = encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail);
             }
-            $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
+            $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div contenteditable="true" id="pageName_${pageName}" class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
 
             if (pageName == this.pageIds[curPage.index]) {
                 $(`#page_${pageName}`).addClass('active');
@@ -3238,6 +3228,31 @@ class PagesBar {
             // Add listener for right-click
             this.addPageTriggers(pageName);
         }
+
+        // Set content edit triggers on page names
+        $('.pageId[contenteditable]').on('focus', function() {
+            // var $this = $(this);
+            // $this.data('before', $this.html());
+            // return $this;
+        }).on('blur keydown paste', function(event) {
+            var $this = $(this);
+            if(event.key == 'Enter') {
+                event.preventDefault();
+                const oldName = $this.attr('id').slice(9);
+                pagesBar.renamePage(oldName, $this.html());
+                $this.off('focusout');
+                $this.attr('contenteditable','false');
+                $this.attr('contenteditable','true');
+                console.log('Exited rename with ENTER.');
+            } else {
+                $this.off('focusout');
+                $this.on('focusout', function() {
+                    const oldName = $this.attr('id').slice(9);
+                    pagesBar.renamePage(oldName, $this.html());
+                });
+            }
+            return $this;
+        });
 
         // Add page button
         $('#pages').append('<li id="block_x"><a id = "page_x" href="#top" draggable="false"><img src="/img/add-icon.png" height="80" draggable="false"><br />&nbsp;</a></li>');
@@ -3490,11 +3505,30 @@ class PagesBar {
         });
     }
 
-    renamePage(oldName, newName) {
-        $(`#block_${oldName}`).attr("id", `block_${newName}`);
-        $(`#page_${oldName}`).attr("id", `page_${newName}`);
-        this.pageIds[this.pageIds.indexOf(oldName)] = newName;
-        this.addAllPageTriggers();
+    renamePage(oldName, newName_unchecked) {
+        // Check if name is already in use
+        const newName = newName_unchecked.replace(/ /g, '_');
+        if (newName != curPage.data.id) {
+            if (currentStatus.pageIds.indexOf(newName) == -1) {
+                curPage.data.id = newName;
+                curPage.updated = true;
+                $(`#block_${oldName}`).attr("id", `block_${newName}`);
+                $(`#page_${oldName}`).attr("id", `page_${newName}`);
+                $(`#pageName_${oldName}`).attr("id", `pageName_${newName}`);
+                this.pageIds[this.pageIds.indexOf(oldName)] = newName;
+                this.addAllPageTriggers();
+                return true;
+            } else {
+                // Warn the user that name is already in use
+                popUpMessage({
+                    title: 'Probleem',
+                    text: '<h3>Naam reeds in gebruik</h3><p>Voer een andere naam in.</p>',
+                    modal: true,
+                    ok: true 
+                });
+                return false;
+            }
+        }
     }
 
     movePage(pageName1, pageName2) {
