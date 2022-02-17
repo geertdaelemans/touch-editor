@@ -1256,7 +1256,7 @@ class Project {
                         }
                     }
                 } else {
-                    if (containers[i].asset[j].url && containers[i].asset.url == oldName) {
+                    if (containers[i].asset.url && containers[i].asset.url == oldName) {
                         containers[i].asset.url = newName;
                     }                    
                 }
