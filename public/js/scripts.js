@@ -855,7 +855,7 @@ function popUpMessage(message = null) {
             buttons = {
                 Ok: function() {
                     $(this).dialog("close");
-                }
+                } 
             }
         }
 
@@ -1858,21 +1858,22 @@ function showPageInfo() {
     $('#annotate').off();
     $('#template').off();
     $('#assets').off();
-
     // Activate all listeners
-    $('#id').on('change keyup focusout', function(event) {
-        const pageName = currentStatus.pageIds[curPage.index];
-        const newId = $(this).val().replace(/ /g, '_');
-        // When user acknowledges the change, do a check for existing names
-        if (event.type == 'change' || event.type == 'focusout') {
-            if (!pagesBar.renamePage(pageName, newId)) {
-                $(this).val(curPage.data.id);
-                $(`#page_${pageName}`).children('.pageId').html(pageName);
-            };
+    $('#id').on('keyup', function(event) {
+        const pageName = curPage.data.id;
+        const $this = $(this);
+        // Must detect enter on keyup, otherwise the keyup event causes issues in the follow-up
+        if (event.key == 'Enter') {
+            $this.trigger('blur');      
         } else {
             // Update the fields after each keyup
-            curPage.updated = true;
-            $(`#page_${pageName}`).children('.pageId').html($(this).val());
+            $(`#page_${pageName}`).children('.pageId').html($this.val() != '' ? $this.val() : '&nbsp;');
+            // When user acknowledges the change, do a check for existing names
+            $this.off('blur').on('blur', function() {
+                if (!pagesBar.renamePage(pageName, $this.val())) {
+                    $this.val(pageName.replace(/_/g, ' '));
+                };
+            })
         }
     });
     $('#html').on('change', function() {
@@ -3122,25 +3123,26 @@ class PagesBar {
         const self = this;
 
         // Add listener to switch page
-        $(`#page_${pageName}`).off('click');
-        $(`#page_${pageName}`).on('click', function(event) {
+        $(`#page_${pageName}`).off('click').on('click', function(event) {
             event.preventDefault();
             switchPage(pageName);
             toggleRightBar(false);
         });
 
         // Add listener for right-click
-        $(`#page_${pageName}`).off('contextmenu');
-        $(`#page_${pageName}`).on('contextmenu', function(event) {
+        $(`#page_${pageName}`).off('contextmenu').on('contextmenu', function(event) {
             // Avoid standard context menu
             event.preventDefault();
             $('#popup').html('');
+            let numberOfLines = 0;
 
             // Compose the custom menu
             if (self.pageIds.length > 1) {
                 $('#popup').append(`<li class="disabled">Verplaats ${pageName.replace(/_/g, ' ')}</li>`);
+                numberOfLines++;
                 if (pageIndex > 0) {
                     $('#popup').append(`<li id="vooraan">Vooraan</li>`);
+                    numberOfLines++;
                     $(`#vooraan`).off();
                     $(`#vooraan`).on('click', function() {
                         $('#popup').hide(100); // Hide dropdown menu
@@ -3154,6 +3156,7 @@ class PagesBar {
                         } else {
                             $('#popup').append(`<li id="na${i}">Achteraan</li>`);
                         }
+                        numberOfLines++;
                         $(`#na${i}`).off();
                         $(`#na${i}`).on('click', function() {
                             $('#popup').hide(100); // Hide dropdown menu
@@ -3164,20 +3167,24 @@ class PagesBar {
                 $('#popup').append('<li class="disabled"></li>');
                 if (pageIndex < self.pageIds.length - 1) {
                     $('#popup').append('<li id="moveRight"><i class="fas fa-arrow-right"></i> Naar rechts</li>');
+                    numberOfLines++;
                 }
                 if (pageIndex > 0) {
                     $('#popup').append('<li id="moveLeft"><i class="fas fa-arrow-left"></i> Naar links</li>');
+                    numberOfLines++;
                 }
                 $('#popup').append('<li class="disabled"></li>');
+                numberOfLines++;
             }
             $('#popup').append('<li id="delete"><i class="fa fa-trash" aria-hidden="true"></i> Verwijder</li>');
+            numberOfLines++;
 
             // Show contextmenu
             $('#popup').finish().toggle(100).
 
             // In the right position (the mouse)
             css({
-                top: (Number(event.pageY) - $('#menu-bar').height() - ((self.pageIds.length > 1 ? self.pageIds.length + 2 : 1)) * 41) + "px",
+                top: (Number(event.pageY) - $('#menu-bar').height() - numberOfLines * 41) + "px",
                 left: (Number(event.pageX) - $('#sidebar-left').width()) + "px"
             });
 
@@ -3198,7 +3205,30 @@ class PagesBar {
                 $('#popup').hide(100); // Hide dropdown menu
                 self.deletePage(pageName);
             });
-        });        
+        });
+            
+        // Add rename trigger
+        $(`#pageName_${pageName}`).off('click').on('click', function() {
+            var $this = $(this);
+            $this.attr('contenteditable', 'true');
+            $this.trigger('focus');
+        }).off('focus').on('focus').off('blur keydown paste').on('blur keydown paste', function(event) {
+            var $this = $(this);
+            const oldName = $this.attr('id').slice(9);
+            // Catch event when users pushed ENTER or ESCAPE button
+            if(event.key == 'Enter' || event.key == 'Escape' || event.key == 'Tab') {
+                event.preventDefault();
+                if (event.key == 'Enter') {
+                    pagesBar.renamePage(oldName, $this.html());
+                }
+                $this.off('focusout');
+                $this.attr('contenteditable','false');
+            } else {
+                $this.off('focusout').on('focusout', function() {
+                    pagesBar.renamePage(oldName, $this.html());
+                });
+            }
+        });
     }
 
     addAllPageTriggers() {
@@ -3219,7 +3249,7 @@ class PagesBar {
             if (thumbnail in currentStatus.screenshots) {
                 imagePath = encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail);
             }
-            $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div contenteditable="true" id="pageName_${pageName}" class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
+            $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div id="pageName_${pageName}" class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
 
             if (pageName == this.pageIds[curPage.index]) {
                 $(`#page_${pageName}`).addClass('active');
@@ -3228,31 +3258,6 @@ class PagesBar {
             // Add listener for right-click
             this.addPageTriggers(pageName);
         }
-
-        // Set content edit triggers on page names
-        $('.pageId[contenteditable]').on('focus', function() {
-            // var $this = $(this);
-            // $this.data('before', $this.html());
-            // return $this;
-        }).on('blur keydown paste', function(event) {
-            var $this = $(this);
-            if(event.key == 'Enter') {
-                event.preventDefault();
-                const oldName = $this.attr('id').slice(9);
-                pagesBar.renamePage(oldName, $this.html());
-                $this.off('focusout');
-                $this.attr('contenteditable','false');
-                $this.attr('contenteditable','true');
-                console.log('Exited rename with ENTER.');
-            } else {
-                $this.off('focusout');
-                $this.on('focusout', function() {
-                    const oldName = $this.attr('id').slice(9);
-                    pagesBar.renamePage(oldName, $this.html());
-                });
-            }
-            return $this;
-        });
 
         // Add page button
         $('#pages').append('<li id="block_x"><a id = "page_x" href="#top" draggable="false"><img src="/img/add-icon.png" height="80" draggable="false"><br />&nbsp;</a></li>');
@@ -3453,7 +3458,7 @@ class PagesBar {
         }
 
         // Display page in pages bar
-        $(`#block_x`).before(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div class="pageId">${pageName.toString().replace(/_/g, ' ')}</div></a></li>`).fadeIn();
+        $(`#block_x`).before(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div id="pageName_${pageName}" class="pageId">${pageName.toString().replace(/_/g, ' ')}</div></a></li>`).fadeIn();
 
         // Make new page active
         $(`#page_${pageName}`).parents('#pages').find('.active').removeClass('active').end().end().addClass('active');
@@ -3506,12 +3511,12 @@ class PagesBar {
     }
 
     renamePage(oldName, newName_unchecked) {
-        // Check if name is already in use
         const newName = newName_unchecked.replace(/ /g, '_');
         if (newName != curPage.data.id) {
-            if (currentStatus.pageIds.indexOf(newName) == -1) {
+            if (currentStatus.pageIds.indexOf(newName) == -1 && /^[0-9a-zA-Z_]+$/.test(newName)) {
                 curPage.data.id = newName;
                 curPage.updated = true;
+                $('#id').val(newName.replace(/_/g, ' '));
                 $(`#block_${oldName}`).attr("id", `block_${newName}`);
                 $(`#page_${oldName}`).attr("id", `page_${newName}`);
                 $(`#pageName_${oldName}`).attr("id", `pageName_${newName}`);
@@ -3520,11 +3525,20 @@ class PagesBar {
                 return true;
             } else {
                 // Warn the user that name is already in use
+                $(`#pageName_${oldName}`).html(oldName.replace(/_/g, ' '));
+                let message = '';
+                if (newName == '') {
+                    message = 'Geen geldige naam opgegeven';
+                } else if (!/^[0-9a-zA-Z]+$/.test(newName)) {
+                    message = 'Enkel letters en cijfers toegestaan';
+                } else {
+                    message = 'Naam reeds in gebruik';
+                }
                 popUpMessage({
                     title: 'Probleem',
-                    text: '<h3>Naam reeds in gebruik</h3><p>Voer een andere naam in.</p>',
+                    text: `<h3>${message}</h3><p>Voer een andere naam in.</p>`,
                     modal: true,
-                    ok: true 
+                    ok: true
                 });
                 return false;
             }
