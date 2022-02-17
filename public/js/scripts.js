@@ -1812,6 +1812,7 @@ function showPageInfo() {
     $('#annotate').html('<option value="[NONE]">Geen</option>');
     $('#annotate').append('<option value="[GREEN]">Groen</option>');
     $('#annotate').append('<option value="[RED]">Rood</option>');
+    $('#annotate').append('<option value="[MULTI]">Multi</option>');
     if (curPage.data.annotate) {
         $('#annotate').val(curPage.data.annotate);
         $('#annotate').attr('class', curPage.data.annotate.replace(/[\[\]']+/g,''));

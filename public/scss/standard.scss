@@ -864,6 +864,10 @@ iframe {
         color: white;
         background: rgb(244, 55, 69);
     }
+    option[value="[MULTI]"] {
+        color: black;
+        background: rgb(222, 55, 244);
+    }
 }
 
 #annotate.NONE {
@@ -877,6 +881,10 @@ iframe {
 #annotate.GREEN {
     color: black;
     background: rgb(93, 252, 113);
+}
+#annotate.MULTI {
+    color: black;
+    background: rgb(222, 55, 244);
 }
 
 .textArea {

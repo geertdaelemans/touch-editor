@@ -781,6 +781,10 @@ iframe {
   color: white;
   background: #f43745; }
 
+#annotate option[value="[MULTI]"] {
+  color: black;
+  background: #33b3f3; }
+
 #annotate.NONE {
   color: black;
   background: white; }
@@ -792,6 +796,10 @@ iframe {
 #annotate.GREEN {
   color: black;
   background: #5dfc71; }
+
+#annotate.MULTI {
+  color: black;
+  background: #33b3f3; }
 
 .textArea {
   height: 6em; }
