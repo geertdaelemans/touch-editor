@@ -781,9 +781,13 @@ iframe {
   color: white;
   background: #f43745; }
 
-#annotate option[value="[MULTI]"] {
+#annotate option[value="[PINK]"] {
   color: black;
-  background: #33b3f3; }
+  background: #c27691; }
+  
+#annotate option[value="[MULTI]"] {
+  color: white;
+  background: darkgray; }
 
 #annotate.NONE {
   color: black;
@@ -797,9 +801,13 @@ iframe {
   color: black;
   background: #5dfc71; }
 
-#annotate.MULTI {
+#annotate.PINK {
   color: black;
-  background: #33b3f3; }
+  background: #c27691; }
+
+#annotate.MULTI {
+  color: white;
+  background-image: linear-gradient(to right, yellow,green,blue); }
 
 .textArea {
   height: 6em; }
