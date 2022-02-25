@@ -1817,8 +1817,10 @@ function showPageInfo() {
     if (curPage.data.annotate) {
         $('#annotate').val(curPage.data.annotate);
         $('#annotate').attr('class', curPage.data.annotate.replace(/[\[\]']+/g,''));
+        $('#penActive').show();
     } else {
         $('#annotate').attr('class', 'NONE');
+        $('#penActive').hide();
     }
 
     $('#template').html('<option value="">Geen</option>');
@@ -1889,6 +1891,11 @@ function showPageInfo() {
         const value = $(this).val();
         curPage.data.annotate = value;
         $('#annotate').attr('class', value.replace(/[\[\]']+/g,''));
+        if (value == '[NONE]') {
+            $('#penActive').hide();
+        } else {
+            $('#penActive').show();
+        }
         curPage.updated = true;        
     });
     $('#template').on('change', function() {
