@@ -769,43 +769,51 @@ iframe {
     padding-left: 10px;
     font-weight: 600; }
 
-#annotate option[value="[NONE]"] {
+#annotateSelector option[value="[NONE]"] {
   color: black;
   background: white; }
 
-#annotate option[value="[GREEN]"] {
+#annotateSelector option[value="[CUSTOM]"] {
+  color: black;
+  background: white; }  
+
+#annotateSelector option[value="[GREEN]"] {
   color: black;
   background: #5dfc71; }
 
-#annotate option[value="[RED]"] {
+#annotateSelector option[value="[RED]"] {
   color: white;
   background: #f43745; }
 
-#annotate option[value="[PINK]"] {
+#annotateSelector option[value="[PINK]"] {
   color: black;
   background: #c27691; }
   
-#annotate option[value="[MULTI]"] {
+#annotateSelector option[value="[MULTI]"] {
   color: white;
   background: darkgray; }
 
-#annotate.NONE {
+#annotateSelector.NONE {
   color: black;
   background: white; }
 
-#annotate.RED {
+#annotateSelector.CUSTOM {
+  color: black;
+  background: white; }
+
+#annotateSelector.RED {
   color: white;
   background: #f43745; }
 
-#annotate.GREEN {
+#annotateSelector.GREEN {
   color: black;
   background: #5dfc71; }
 
-#annotate.PINK {
+#annotateSelector.PINK {
   color: black;
   background: #c27691; }
 
-#annotate.MULTI {
+#annotateSelector.MULTI {
   color: white;
   background-image: linear-gradient(to right, yellow,green,blue); }
 

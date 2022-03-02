@@ -1809,17 +1809,29 @@ function showPageInfo() {
     }
 
     // Create annotate selector
-    $('#annotate').html('<option value="[NONE]">Geen</option>');
-    $('#annotate').append('<option value="[GREEN]">Groen</option>');
-    $('#annotate').append('<option value="[RED]">Rood</option>');
-    $('#annotate').append('<option value="[PINK]">Roze</option>');
-    $('#annotate').append('<option value="[MULTI]">Multi</option>');
+    let annotationOptions = ["[NONE]", "[GREEN]", "[RED]", "[PINK]", "[MULTI]"];
+    $('#annotateSelector').html('<option value="[NONE]">Geen</option>');
+    $('#annotateSelector').append('<option value="[GREEN]">Groen</option>');
+    $('#annotateSelector').append('<option value="[RED]">Rood</option>');
+    $('#annotateSelector').append('<option value="[PINK]">Roze</option>');
+    $('#annotateSelector').append('<option value="[MULTI]">Multi</option>');
+    $('#annotateSelector').append('<option value="[CUSTOM]">Aangepast</option>');
     if (curPage.data.annotate) {
         $('#annotate').val(curPage.data.annotate);
-        $('#annotate').attr('class', curPage.data.annotate.replace(/[\[\]']+/g,''));
+        if (annotationOptions.includes(curPage.data.annotate)) {
+            $('#annotateSelector').val(curPage.data.annotate);
+            $('#annotateSelector').attr('class', curPage.data.annotate.replace(/[\[\]']+/g,''));
+            $('#annotate').hide();
+        } else {
+            $('#annotateSelector').val("[CUSTOM]");
+            $('#annotateSelector').attr('class', "CUSTOM");
+            $('#annotate').show();
+        }
         $('#penActive').show();
     } else {
-        $('#annotate').attr('class', 'NONE');
+        $('#annotateSelector').attr('class', 'NONE');
+        $('#annotate').val("[NONE]");
+        $('#annotate').hide();
         $('#penActive').hide();
     }
 
@@ -1859,6 +1871,7 @@ function showPageInfo() {
     // Clear all listeners
     $('#id').off();
     $('#html').off();
+    $('#annotateSelector').off();
     $('#annotate').off();
     $('#template').off();
     $('#assets').off();
@@ -1887,14 +1900,28 @@ function showPageInfo() {
         curPage.template.setHtml(newHtml);
         switchToTab('viewer');
     });
-    $('#annotate').on('change', function() {
+    $('#annotateSelector').on('change', function() {
+        const value = $(this).val();
+        if (annotationOptions.includes(value)) {
+            $('#annotate').hide();
+            $('#annotate').val(value);
+            $('#annotate').trigger('update');
+        } else {
+            $('#annotate').show();
+            $('#annotate').val('[]');
+        }
+        $('#annotateSelector').attr('class', value.replace(/[\[\]']+/g,''));  
+    });
+    $('#annotate').on('change update keyup', function() {
         const value = $(this).val();
         curPage.data.annotate = value;
-        $('#annotate').attr('class', value.replace(/[\[\]']+/g,''));
         if (value == '[NONE]') {
             $('#penActive').hide();
         } else {
             $('#penActive').show();
+        }
+        if (value == '[CUSTOM]') {
+            $('#annotate').show();
         }
         curPage.updated = true;        
     });

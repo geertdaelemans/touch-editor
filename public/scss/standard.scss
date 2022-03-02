@@ -851,8 +851,12 @@ iframe {
     }
 }
   
-#annotate {
+#annotateSelector {
     option[value="[NONE]"] {
+        color: black;
+        background: white;
+    }
+    option[value="[CUSTOM]"] {
         color: black;
         background: white;
     }
@@ -874,23 +878,27 @@ iframe {
     }
 }
 
-#annotate.NONE {
+#annotateSelector.NONE {
     color: black;
     background: white;
 }
-#annotate.RED {
+#annotateSelector.CUSTOM {
+    color: black;
+    background: white;
+}
+#annotateSelector.RED {
     color: white;
     background: rgb(244, 55, 69);
 }
-#annotate.GREEN {
+#annotateSelector.GREEN {
     color: black;
     background: rgb(93, 252, 113);
 }
-#annotate.PINK {
+#annotateSelector.PINK {
     color: black;
     background: rgb(194, 118, 145);
 }
-#annotate.MULTI {
+#annotateSelector.MULTI {
     color: black;
     background: rgb(222, 55, 244);
 }
