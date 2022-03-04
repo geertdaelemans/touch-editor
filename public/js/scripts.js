@@ -1814,7 +1814,7 @@ function showPageInfo() {
     $('#annotateSelector').append('<option value="[GREEN]">Groen</option>');
     $('#annotateSelector').append('<option value="[RED]">Rood</option>');
     $('#annotateSelector').append('<option value="[PINK]">Roze</option>');
-    $('#annotateSelector').append('<option value="[MULTI]">Multi</option>');
+    $('#annotateSelector').append('<option value="[MULTI]">Oekraïne</option>');
     $('#annotateSelector').append('<option value="[CUSTOM]">Aangepast</option>');
     if (curPage.data.annotate) {
         $('#annotate').val(curPage.data.annotate);
