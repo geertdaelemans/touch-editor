@@ -171,7 +171,6 @@ socket.on('whoAreYou', function() {
 });
 
 socket.on('connected', function() {
-    $('#touchDesignerStatus').html(`Verbonden met ${currentTarget}`);
     $('#targetSelector').hide();
     $('#reconnectButton').html('Verbreek verbinding');
     socket.emit('sendToTouch', 'status');
@@ -186,6 +185,8 @@ socket.on('disconnected', function() {
 });
 
 socket.on('projects', function(status) {
+    const serverName = status.server;
+    $('#touchDesignerStatus').html(`Verbonden met ${serverName}`);
     // Check the touch toggle
     const touchToggle = status.touchToggle;
     if (touchToggle == 'True') {
