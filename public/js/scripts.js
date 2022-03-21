@@ -3289,9 +3289,10 @@ class PagesBar {
             let imagePath = '';
             if (thumbnail in currentStatus.screenshots) {
                 imagePath = encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail);
-            } else {
-                imagePath = '/img/placeholder-image.jpg';
             }
+            // } else {
+            //     imagePath = '/img/placeholder-image.jpg';
+            // }
             $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div id="pageName_${pageName}" class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
 
             if (pageName == this.pageIds[curPage.index]) {
