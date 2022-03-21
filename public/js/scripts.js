@@ -122,18 +122,23 @@ class Page {
     }
     makeSnapShot(callback = null) {
         const pageName = this.data.id;
-        this.template.resetAnimation();
-        html2canvas(document.querySelector('#screenshotArea'), { backgroundColor: '#000000', scale: 1 })
-        .then(canvasExport => {
-            const image = canvasExport.toDataURL('image/png');
-            $(`#page_${pageName}`).children('img').attr('src', image);
-            socket.emit('saveScreenShot', pageName, image, (response) => {
-                if (callback) {
-                    $(`#page_${pageName}`).children('img').attr('src', response.filePath);
-                    callback(response);
-                }
-            });
-        });
+        try {
+            this.template.resetAnimation();
+            html2canvas(document.querySelector('#screenshotArea'), { backgroundColor: '#000000', scale: 1 })
+            .then(canvasExport => {
+                const image = canvasExport.toDataURL('image/png');
+                $(`#page_${pageName}`).children('img').attr('src', image);
+                socket.emit('saveScreenShot', pageName, image, (response) => {
+                    if (callback) {
+                        $(`#page_${pageName}`).children('img').attr('src', response.filePath);
+                        callback(response);
+                    }
+                });
+            })
+        } catch(error) {
+            $(`#page_${pageName}`).children('img').attr('src', '/img/placeholder-image.jpg');
+            console.log(`Error generating snapshot: ${error.message}.`);
+        };
     }
     save(callback = null) {
         if (this.index >= 0) {
@@ -3284,6 +3289,8 @@ class PagesBar {
             let imagePath = '';
             if (thumbnail in currentStatus.screenshots) {
                 imagePath = encodeURIComponent(currentStatus.presentationFolder + currentStatus.projectName + '/screenshots/' + thumbnail);
+            } else {
+                imagePath = '/img/placeholder-image.jpg';
             }
             $('#pages').append(`<li id="block_${pageName}"><a id = "page_${pageName}" href="#top" draggable="false"><img src="${imagePath}" height="80" draggable="false"><br /><div id="pageName_${pageName}" class="pageId">${pageName.replace(/_/g, ' ')}</div></a></li>`);
 
