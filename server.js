@@ -82,7 +82,6 @@ const Twitter = require('./twitter.js');
 Twitter.initiateTwitter();
 
 const fs = require('fs');
-const Account = require('./models/account');
 
 var accounts = {}
 
@@ -102,13 +101,13 @@ function removeValueFromArray(array, value) {
 // ////// //
 
 // Set-up MongooseDB
-mongoose.connect(process.env.DATABASE_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-const db = mongoose.connection
+const db = require('./db');
+const projectRouter = require('./routes/project-router');
+
 db.on('error', error => console.error(error))
 db.once('open', () => util.log('Connected to Mongoose'))
+
+const AccountCtrl = require('./controllers/account-ctrl');
 
 const initMongoose = () => {
     const path = appRoot + '/.deploy/users.json';
@@ -116,25 +115,13 @@ const initMongoose = () => {
         if (err) return;
         try {
             const usersConf = JSON.parse(data);
-            usersConf.users.forEach(user => addUser(user));
+            usersConf.users.forEach(user => AccountCtrl.addUser(user));
         } catch (error) {
             util.log(`Error in users.json: ${error.message}.`);
             deleteUsers(path);            
         }
         deleteUsers(path);
     });
-}
-
-const addUser = (user) => {
-    const account = new Account({
-        username: user.username.toLowerCase(),
-        name: user.name,
-        role: user.role
-    });
-    Account.register(account, user.password, function(err, returnedAccount) {
-        if (err) console.error(err.message);
-    });
-    util.log('Default user(s) added.');
 }
 
 const deleteUsers = (path) => {
@@ -207,6 +194,21 @@ app.post('/upload', async function(req, res) {
     // Accknowledge retrieval of upload
     res.status(204).send();
 });
+
+// API experiment with REACT
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+const apiApp = express();
+const apiPort = 3001;
+
+apiApp.use(bodyParser.urlencoded({ extended: true }));
+apiApp.use(cors());
+apiApp.use(bodyParser.json());
+
+apiApp.use('/api', projectRouter);
+
+apiApp.listen(apiPort, () => util.log(`Server running on port ${apiPort}`));
 
 // Set-up Socket.io
 //var io = socketio(server);

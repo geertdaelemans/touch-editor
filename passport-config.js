@@ -1,5 +1,5 @@
 const LocalStrategy = require('passport-local').Strategy
-const Account = require('./models/account')
+const Account = require('./models/account-model')
 
 function initialize(passport) {
     passport.use(new LocalStrategy({ usernameField: 'username' }, Account.authenticate()))

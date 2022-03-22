@@ -3,7 +3,7 @@ const router = express.Router()
 const passport = require('passport')
 const util = require('util')
 
-const Account = require('../models/account')
+const Account = require('../models/account-model')
 const Roles =
     [
         {

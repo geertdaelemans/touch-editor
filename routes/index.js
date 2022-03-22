@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const Account = require('../models/account');
+const Account = require('../models/account-model');
 
 // Middleware function to make sure user is authenticated
 function checkAuthenticated(req, res, next) {
@@ -57,6 +57,20 @@ router.get('/profile', checkAuthenticated, (req, res) => {
         errorMessage: ''
     };
     res.render('profile', locals);
+});
+
+router.get('/facebook', function(req, res) {
+    const projectName = (req.query.name ? req.query.name : 'None');
+    let locals = {
+        title: 'VRT Touch - Facebook',
+        name: 'anonymous',
+        role: 1,
+        username: 'anonyomous',
+        projectName: projectName,
+        code: req.query.code
+    };
+    console.log(req.query.code);
+    res.render('facebook', locals);
 });
 
 router.post('/profile', checkAuthenticated, function(req, res) {

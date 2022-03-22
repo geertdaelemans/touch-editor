@@ -23,6 +23,8 @@ const STANDARD_TRANSITIONSPEED = 0.6;
 const IMPORT_FOLDER = process.env.IMPORT_FOLDER;
 const IMPORT_TEMPLATES = process.env.IMPORT_TEMPLATES;
 
+const ProjectCtrl = require('./controllers/project-ctrl');
+
 // //////////////// //
 // HELPER FUNCTIONS //
 // //////////////// //
@@ -338,6 +340,10 @@ class Project {
             let projects = {};
             for (let i in files) {
                 const name = files[i];
+                if (!await ProjectCtrl.isProjectListed(name)) {
+                    const data = { projectName: name };
+                    ProjectCtrl.addProject(data);
+                };
                 const timeStamp = await getTimeStamp(name);
                 const fileName = (timeStamp ? 'project.png' : '/img/blankProject.jpg');
                 const project = {
@@ -378,10 +384,14 @@ class Project {
     isMediaUsed(value, json = this.data.presentation.container) {
         function check(value, json) {
             let contains = false;
-            Object.keys(json).some(key => {
-                contains = typeof json[key] === 'object' ? check(value, json[key]) : json[key] === value;
-                return contains;
-            });
+            try {
+                Object.keys(json).some(key => {
+                    contains = typeof json[key] === 'object' ? check(value, json[key]) : json[key] === value;
+                    return contains;
+                });
+            } catch (error) {
+                util.log(`Error checking media: ${error.message}`);
+            }
             return contains;
         }
         for (let container in json) {
@@ -895,14 +905,15 @@ class Project {
     }
 
     // Create new project
-    async create(user) {
+    async create(user = null, name = null) {
         // Create a project name in de format "Project #" and make sure that the
-        // name is not already in use. When in use, increment the number.        
+        // name is not already in use. When in use, increment the number.   
+        const prefix = (name ? name : 'Project');
         const numberOfProjects = Object.keys(Project.projectArray).length;
         let projectIndex = Number(numberOfProjects) + 1;
-        let projectName = `Project ${projectIndex}`;
+        let projectName = (name ? prefix : `${prefix} ${projectIndex}`);
         while (Project.projectArray.hasOwnProperty(projectName)) {
-            projectName = `Project ${++projectIndex}`;
+            projectName = `${prefix} ${++projectIndex}`;
         }
         const newProjectPath = WORKING_DIRECTORY + PRESENTATION_FOLDER + projectName;
         try {
@@ -935,13 +946,23 @@ class Project {
             }
             this.lock();
             await this.write();
+            const data = {
+                projectName: this.name,
+                canvasWidth: this.canvasWidth,
+                canvasHeight: this.canvasHeight,
+                transitionSpeed: this.transitionSpeed,
+                transitionAudio: this.transitionAudio
+            }
+            ProjectCtrl.addProject(data);
             await Project.initiateProjectArray();
             await this.cleanAssets();
             this.sendStatus();
-            this.triggerPage(-1);  // -1 indicates that root page must be loaded for the first time
+            this.triggerPage(-1);  // -1 indicates that root page must be loaded for the first time          
             Project.sendProjectsUpdate();
-            Project.addUser(user, projectName);
-            Project.getUserList();
+            if (user) {
+                Project.addUser(user, projectName);
+                Project.getUserList();
+            }
             util.log(`Created ${projectName} project.`);
         } catch(err) {
             util.log(err);
@@ -969,9 +990,26 @@ class Project {
         }
     }
 
+    // Delete project
+    static async delete(projectName) {
+        if (projectName) {
+            const currentUsers = this.getUsersOfProject(projectName);
+            for (let user in currentUsers) {
+                this.removeUser(currentUsers[user], projectName);
+                util.log(`Kicked ${currentUsers[user]} from ${projectName}.`);
+            }
+            const projectPath = WORKING_DIRECTORY + PRESENTATION_FOLDER + projectName;
+            await fs.remove(projectPath);
+            await Project.listProjects(WORKING_DIRECTORY + PRESENTATION_FOLDER);
+            Project.sendProjectsUpdate();
+            util.log(`Removed project ${projectName}.`);
+        }
+    }
+
     // Change settings
     async changeSettings(settings) {
         if (settings.projectName) {
+            ProjectCtrl.updateSettings(this.name, settings);
             // Check if user wants to rename the project
             if (settings.projectName != this.name && !Project.projectExists(settings.projectName)) {
                 Project.renameUserListProject(this.name, settings.projectName);
@@ -1016,6 +1054,11 @@ class Project {
                             assets.push(containers[i].asset);
                             containers[i].asset = assets
                         }
+
+                        if (containers[i].fields === null) {
+                            delete containers[i].fields;
+                        }
+
                         // Check if a template has been selected. If so, retrieve
                         // all editable fields of the template, if not present already.
                         if (containers[i].html && containers[i].html != '') {
