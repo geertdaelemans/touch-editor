@@ -215,8 +215,11 @@ apiApp.listen(apiPort, () => util.log(`Server running on port ${apiPort}`));
 // TO DO - Made Socket.io global -- not a good practice, but good enough for now
 global.io = require('socket.io')(server, {
     pingTimeout: 5000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    maxHttpBufferSize: 1e8
 });
+
+util.log(`maxHttpBufferSize = ${io.opts.maxHttpBufferSize}`);
 
 var projectArray = {};
 Project.userList = {};

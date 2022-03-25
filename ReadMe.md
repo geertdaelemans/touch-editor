@@ -139,28 +139,26 @@ This can be remedied by following scenario:
 # SERVER STARTING AS A SERVICE
 ## Install the package:
 
+The recommended way to install node-windows is with npm, using the global flag:
+
 ```
-npm install qckwinsvc -g
+npm install -g node-windows
+```
+
+Then, in your project root, run:
+
+```
+npm link node-windows
 ```
 
 ## Installing the service:
 
 ```
-> qckwinsvc
-prompt: Service name: VRTTouch
-prompt: Service description: VRT Touch Application
-prompt: Node script path: C:\Workspaces\vrt-touch-editor\server.js
-prompt: Should the service get started immediately? (y/n): y
-Service installed.
-Service started.
+> node RunService.js
 ```
 
 ## Uninstalling the service:
 
 ```
-> qckwinsvc --uninstall
-prompt: Service name: VRTTouch
-prompt: Node script path: C:\Workspaces\vrt-touch-editor\server.js
-Service stopped.
-Service uninstalled.
+> node StopService.js
 ```
