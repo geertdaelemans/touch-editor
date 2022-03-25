@@ -917,11 +917,12 @@ class Project {
         }
         const newProjectPath = WORKING_DIRECTORY + PRESENTATION_FOLDER + projectName;
         try {
+            const nameOfFirstPage = '1';
             await fs.mkdir(newProjectPath);
             await fs.mkdir(newProjectPath + "/screenshots");
             this.name = projectName;
             this.media = {};
-            this.pageIds = ["0"];
+            this.pageIds = [nameOfFirstPage];
             this.numberOfPages = 1;
             this.canvasWidth = STANDARD_CANVASWIDTH;
             this.canvasHeight = STANDARD_CANVASHEIGHT;
@@ -936,7 +937,7 @@ class Project {
                         transitionAudio: this.transitionAudio
                     },
                     container: {
-                        id: 0,
+                        id: nameOfFirstPage,
                         background: "",
                     },
                     metadata: {
