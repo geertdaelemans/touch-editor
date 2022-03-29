@@ -68,3 +68,16 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## .env-file
+Create an .env-file (no extension) containing following parameters:
+
+```
+REACT_APP_URL=ocbweb01021.vrt.be
+REACT_APP_PORT=3000
+REACT_APP_API_PORT=3001
+```
+
+## Non-Sucking Service Manager
+Use nssm to create a service based on start.bat.
+[https://nssm.cc/]

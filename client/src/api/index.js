@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const link = `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_API_PORT}/api`;
 const api = axios.create({
-    baseURL: 'http://localhost:3001/api'
+    baseURL: link
 });
 
 export const createProject = payload => api.post(`/project`, payload);

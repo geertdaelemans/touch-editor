@@ -9,9 +9,10 @@ const Wrapper = styled.a.attrs({
 
 class Logo extends Component {
     render() {
+        const link = `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}`;
         return (
-            <Wrapper href="https://localhost:3000">
-                <img src={logo} height="25" alt="sambarros.com" />
+            <Wrapper href={link}>
+                <img src={logo} height="25" alt="VRT Touch" />
             </Wrapper>
         )
     }
