@@ -1,7 +1,7 @@
 const gulp = require('gulp');
 const rename = require('gulp-rename');
 const sourcemaps = require('gulp-sourcemaps');
-const sass = require('gulp-sass');
+const sass = require('gulp-sass')(require('sass'));
 const run = require('gulp-run');
 const nodemon = require('gulp-nodemon'); 
 
