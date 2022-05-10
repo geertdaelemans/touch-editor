@@ -2186,6 +2186,7 @@ function showAssetInfo(assetId, asset) {
         $('#ypos').val(asset.ypos);
         $('#ySlider').slider('value', Math.floor(asset.ypos / currentStatus.canvasHeight * 1000));
         $('#scale').val(asset.scale ? asset.scale * 100 : 100);
+        $('#layer').val(asset.layer ? asset.layer : 0);
         $('#scaleSlider').slider('value', asset.scale ? asset.scale * 100 : 100);
         $('#zoom').prop('checked', asset.zoom ? true : false);        
         $('#transition').val(asset.transition ? asset.transition : 'none');
@@ -2219,6 +2220,7 @@ function showAssetInfo(assetId, asset) {
     $('#xpos').off();
     $('#ypos').off();
     $('#scale').off();
+    $('#layer').off();
     $('#zoom').off();
     $('#transition').off();
     $('#keyframes').off();
@@ -2253,6 +2255,12 @@ function showAssetInfo(assetId, asset) {
     $('#scale').on('change keyup', function() {
         const newScale = $(this).val();
         curPage.data.asset[assetId].scale = newScale / 100;
+        curPage.updated = true;
+        refreshAsset(assetId);
+    });
+    $('#layer').on('change keyup', function() {
+        const newLayer = $(this).val();
+        curPage.data.asset[assetId].layer = newLayer;
         curPage.updated = true;
         refreshAsset(assetId);
     });
