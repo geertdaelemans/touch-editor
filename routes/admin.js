@@ -39,7 +39,7 @@ router.get('/', checkAuthenticated, async (req, res) => {
             name: req.user.name,
             username: req.user.username
         }; 
-        res.render('admin/index', locals);
+        res.render('admin/controller', locals);
     } catch (error) {
         res.redirect('/');
     }
