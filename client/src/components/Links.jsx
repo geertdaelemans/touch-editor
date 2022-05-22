@@ -1,6 +1,6 @@
-import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
-import styled from 'styled-components'
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 
 const Collapse = styled.div.attrs({
     className: 'collpase navbar-collapse',
@@ -14,27 +14,51 @@ const Item = styled.div.attrs({
     className: 'collpase navbar-collapse',
 })``
 
-class Links extends Component {
-    render() {
-        return (
-            <React.Fragment>
-                <Collapse>
-                    <List>
+const Links = () => {
+    const [loggedIn, setLoggedIn] = useState(false);
+
+    useEffect(() => {
+        if (localStorage.getItem("user")) {
+            setLoggedIn(true);
+        } else {
+            setLoggedIn(false);
+        }
+    }, [setLoggedIn]);
+
+    return (
+        <React.Fragment>
+            <Collapse>
+                <List>
+                    {loggedIn && (
+                        <>
+                            <Item>
+                                <Link to="/client/projects" className="nav-link">
+                                    Projecten
+                                </Link>
+                            </Item>
+                            <Item>
+                                <Link to="/client/users" className="nav-link">
+                                    Gebruikers
+                                </Link>
+                            </Item>
+                            <Item>
+                                <Link to="/client/login" className="nav-link">
+                                    Profiel
+                                </Link>
+                            </Item>
+                        </>
+                    )}
+                    {!loggedIn && (
                         <Item>
-                            <Link to="/projects/list" className="nav-link">
-                                Projectenlijst
+                            <Link to="/client/login" className="nav-link">
+                                Login
                             </Link>
                         </Item>
-                        <Item>
-                            <Link to="/projects/create" className="nav-link">
-                                Maak nieuw project aan
-                            </Link>
-                        </Item>
-                    </List>
-                </Collapse>
-            </React.Fragment>
-        )
-    }
+                    )}
+                </List>
+            </Collapse>
+        </React.Fragment>
+    );
 }
 
-export default Links
+export default Links;

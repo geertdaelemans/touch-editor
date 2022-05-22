@@ -75,7 +75,6 @@ Create an .env-file (no extension) containing following parameters:
 ```
 REACT_APP_URL=ocbweb01021.vrt.be
 REACT_APP_PORT=3000
-REACT_APP_API_PORT=3001
 ```
 
 ## Non-Sucking Service Manager

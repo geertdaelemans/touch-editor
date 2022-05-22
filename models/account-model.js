@@ -4,17 +4,22 @@ var passportLocalMongoose = require('passport-local-mongoose');
 
 var Account = new Schema({
     username: String,
+    email: String,
     password: String,
     name: {
         type: String,
-        required: true,
+        required: false,
     },
     role: {
-        // type: mongoose.Schema.Types.ObjectId,
         type: String,
-        required: true
-        // ref: 'Role'
+        required: false
     },
+    roles: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Role"
+        }
+    ],
     createdAt: {
         type: Date,
         required: true,
@@ -22,6 +27,10 @@ var Account = new Schema({
     }
 });
 
-Account.plugin(passportLocalMongoose);
+Account.plugin(passportLocalMongoose, 
+    { 
+        usernameQueryFields: ['username', 'email'], 
+        usernameCaseInsensitive: true
+    });
 
 module.exports = mongoose.model('Account', Account);

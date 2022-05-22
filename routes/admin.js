@@ -26,6 +26,15 @@ function checkAuthenticated(req, res, next) {
 
 // All Users Route
 router.get('/', checkAuthenticated, async (req, res) => {
+    let locals = {
+        title: 'VRT Touch - Control panel',
+        name: req.user.username,
+        username: req.user.username
+    }; 
+    res.render('admin/controller', locals);
+});
+
+router.get('/users', checkAuthenticated, async (req, res) => {
     let searchOptions = {};
     if (req.query.name != null && req.query.name !== '') {
         searchOptions.name = new RegExp(req.query.name, 'i')
@@ -36,15 +45,14 @@ router.get('/', checkAuthenticated, async (req, res) => {
             title: 'VRT Touch - Admin',
             users: users,
             searchOptions: req.query,
-            name: req.user.name,
+            name: req.user.username,
             username: req.user.username
         }; 
-        res.render('admin/controller', locals);
+        res.render('admin/users', locals);
     } catch (error) {
         res.redirect('/');
     }
 });
-
 
 router.get('/register', checkAuthenticated, function(req, res) {
     let locals = {
@@ -58,8 +66,9 @@ router.get('/register', checkAuthenticated, function(req, res) {
 
 router.post('/register', checkAuthenticated, async function(req, res) {
     const account = new Account({
-        username: req.body.username.toLowerCase(),
-        name: req.body.name,
+        username: req.body.username,
+        name: req.body.username,
+        email: req.body.email,
         role: req.body.role
     })
     Account.register(account, req.body.password, function(err, returnedAccount) {

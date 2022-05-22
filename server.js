@@ -49,13 +49,17 @@ const flash = require('express-flash')
 const session = require('express-session')
 const methodOverride = require('method-override')
 const config = require('./config.json');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
 // Configure passport
 const initializePassport = require('./passport-config')
 initializePassport(passport)
 
+// Get routes
 const indexRouter = require('./routes/index');
-const userRouter = require('./routes/admin')
+const userRouter = require('./routes/admin');
+const projectRouter = require('./routes/project-router');
 
 const mongoose = require('mongoose')
 
@@ -102,8 +106,6 @@ function removeValueFromArray(array, value) {
 
 // Set-up MongooseDB
 const db = require('./db');
-const projectRouter = require('./routes/project-router');
-
 db.on('error', error => console.error(error))
 db.once('open', () => util.log('Connected to Mongoose'))
 
@@ -134,6 +136,7 @@ initMongoose();
 
 // Set-up web server
 var app = express();
+//app.use(express.static('public/client'));
 app.use(express.static('public'));
 app.use(fileUpload());
 app.set('view-engine', 'ejs');
@@ -166,8 +169,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layouts/layout');
 app.use(expressLayouts);
 
-app.use('/', indexRouter)
-app.use('/admin', userRouter)
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
+app.use(bodyParser.json());
+
+const auth = require("./controllers/auth.js")();
+app.use(auth.initialize());
+
+
+app.use('/', indexRouter);
+app.use('/admin', userRouter);
+app.use('/api', projectRouter);
 
 // Upload media file to presentation folder
 app.post('/upload', async function(req, res) {
@@ -194,21 +206,6 @@ app.post('/upload', async function(req, res) {
     // Accknowledge retrieval of upload
     res.status(204).send();
 });
-
-// API experiment with REACT
-const bodyParser = require('body-parser');
-const cors = require('cors');
-
-const apiApp = express();
-const apiPort = 3001;
-
-apiApp.use(bodyParser.urlencoded({ extended: true }));
-apiApp.use(cors());
-apiApp.use(bodyParser.json());
-
-apiApp.use('/api', projectRouter);
-
-apiApp.listen(apiPort, () => util.log(`Server running on port ${apiPort}`));
 
 // Set-up Socket.io
 //var io = socketio(server);

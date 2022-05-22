@@ -9,10 +9,10 @@
 
                 <form class="col-12" action="/profile" method="POST">
                     <div class="col-10 form-group user">
-                        <input type="name" id="name" name="name" required class="form-control" placeholder="Voer naam in" value="<%= user.name %>"/>
+                        <input type="name" id="username" name="username" required class="form-control" placeholder="Voer naam in" value="<%= user.username %>"/>
                     </div>
                     <div class="col-10 form-group email">
-                        <input type="email" id="username" name="username" class="form-control" value="<%= user.username %>" readonly />
+                        <input type="email" id="email" name="email" class="form-control" value="<%= user.email %>" readonly />
                     </div>
                     <div class="col-10 form-group password">
                         <input type="password" id="password" name="password" required class="form-control" placeholder="Huidig paswoord" />

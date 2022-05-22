@@ -93,13 +93,14 @@ updateProject = async (req, res) => {
     updatedProject.name = originalName;
     await updatedProject.read();
     await updatedProject.changeSettings(settings);
+    res.status(200).json({ message: `Project ${settings.projectName} updated` });
 }
 
 deleteProject = async (req, res) => {
     const name = await getNameById(req.params.id);
     const ProjectClass = require('../project.js'); // TODO: This is to avoid circular dependency
     await ProjectClass.delete(name);
-    await Project.findOneAndDelete({ _id: req.params.id }, (err, project) => {
+    Project.findOneAndDelete({ _id: req.params.id }, (err, project) => {
         if (err) {
             return res.status(400).json({ success: false, error: err });
         }
@@ -110,7 +111,7 @@ deleteProject = async (req, res) => {
                 .json({ success: false, error: `Project not found` });
         }
         return res.status(200).json({ success: true, data: project });
-    }).clone().catch(err => console.log(err));
+    });
 }
 
 getProjectById = async (req, res) => {

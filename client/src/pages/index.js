@@ -1,5 +1,5 @@
 import ProjectsList from './ProjectsList';
 import ProjectsCreate from './ProjectsCreate';
-import ProjectsUpdate from './ProjectsUpdate';
+import UsersList from './UsersList';
 
-export { ProjectsList, ProjectsCreate, ProjectsUpdate };
+export { ProjectsList, ProjectsCreate, UsersList };

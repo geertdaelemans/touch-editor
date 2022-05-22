@@ -1,120 +1,119 @@
-import React, { Component } from 'react';
-import api from '../api';
-import Table from '../components/Table';
-import styled from 'styled-components';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api";
+import Table from "../components/Table";
 
+import { Wrapper, Update, Delete } from "../style";
 
-const Wrapper = styled.div`
-    padding: 0 40px 40px 40px;
-`
-const Update = styled.div`
-    color: #ef9b0f;
-    cursor: pointer;
-`
-const Delete = styled.div`
-    color: #ff0000;
-    cursor: pointer;
-`
+const ProjectsList = () => {
+    const navigate = useNavigate();
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [projects, setProjects] = useState([]);
 
-class UpdateProject extends Component {
-    updateProject = event => {
-        event.preventDefault();
-        window.location.href = `/projects/update/${this.props.id}`;
-    }
-
-    render() {
-        return <Update onClick={this.updateProject}>Aanpassen</Update>
-    }
-}
-
-class DeleteProject extends Component {
-    deleteProject = event => {
-        event.preventDefault();
-        if (
-            window.confirm(
-                `Do you want to delete the movie ${this.props.id} permanently?`
-            )
-        ) {
-            api.deleteProjectById(this.props.id);
-            window.location.reload();
-        }
-    }
-
-    render() {
-        return <Delete onClick={this.deleteProject}>Verwijder</Delete>
-    }
-}
-
-
-class ProjectsList extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            projects: [],
-            isLoading: false
-        }
-    }
-
-    componentDidMount = async () => {
-        this.setState({ isLoading: true });
-        await api.getAllProjects().then(projects => {
-            this.setState({
-                projects: projects.data.data,
-                isLoading: false
+    const fetchData = useCallback(async () => {
+        setIsLoading(true);
+        await api
+            .getAllProjects()
+            .then((projects) => {
+                setProjects(projects.data.data);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
             });
-        });
-    }
+    }, []);
 
-    render() {
-        const { projects, isLoading } = this.state;
-    
-        const columns = [
-            {
-                Header: 'Titel',
-                accessor: 'projectName',
-                filterable: true
-            }, 
-            {
-                Header: '',
-                accessor: 'update',
-                Cell: function(props) {
-                    return (
-                        <span>
-                            <UpdateProject id={props.row.original._id} />
-                        </span>
-                    );
-                }
+    const UpdateProject = (data) => {
+        const updateProject = (event) => {
+            event.preventDefault();
+            navigate(`/client/projects/update/${data.id}`);
+        };
+
+        return <Update onClick={updateProject}>Aanpassen</Update>;
+    };
+
+    const DeleteProject = (data) => {
+        const deleteProject = async (event) => {
+            event.preventDefault();
+            if (
+                window.confirm(
+                    `Wil je het project ${data.name} permanent verwijderen?`
+                )
+            ) {
+                await api
+                    .deleteProjectById(data.id)
+                    .then(() => {
+                        fetchData();
+                    })
+                    .catch((error) => {
+                        fetchData();
+                        alert(error.message);
+                    });
+            }
+        };
+
+        return <Delete onClick={deleteProject}>Verwijder</Delete>;
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const columns = [
+        {
+            Header: "Titel",
+            accessor: "projectName",
+            filterable: true,
+        },
+        {
+            Header: "",
+            accessor: "update",
+            Cell: function (props) {
+                return (
+                    <span>
+                        <UpdateProject id={props.row.original._id} />
+                    </span>
+                );
             },
-            {
-                Header: '',
-                accessor: 'delete',
-                Cell: function(props) {
-                    return (
-                        <span>
-                            <DeleteProject id={props.row.original._id} />
-                        </span>
-                    );
-                }
-            }            
-        ];
+        },
+        {
+            Header: "",
+            accessor: "delete",
+            Cell: function (props) {
+                return (
+                    <span>
+                        <DeleteProject
+                            id={props.row.original._id}
+                            name={props.row.original.projectName}
+                        />
+                    </span>
+                );
+            },
+        },
+    ];
 
-        let showTable = true
-        if (!projects.length) {
-            showTable = false
-        }
-
-        return (
-            <Wrapper>
-                {showTable && (
-                    <Table
-                        data={projects}
-                        columns={columns}
-                        isLoading={isLoading}
-                    />
-                )}
-            </Wrapper>
-        );
-    }
-}
+    return (
+        <Wrapper>
+            {errorMessage && (
+                <div className="alert alert-danger">{errorMessage}</div>
+            )}
+            {!isLoading && projects.length && (
+                <Table
+                    data={projects}
+                    columns={columns}
+                    isLoading={isLoading}
+                />
+            )}
+            {!isLoading && (
+                <Link to="/client/projects/create" className="nav-link">
+                    <button className="btn btn-primary btn-block">
+                        Maak nieuw project aan
+                    </button>
+                </Link>
+            )}
+        </Wrapper>
+    );
+};
 
 export default ProjectsList;

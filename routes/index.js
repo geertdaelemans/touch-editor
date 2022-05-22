@@ -19,12 +19,6 @@ function checkNotAuthenticated(req, res, next) {
     res.redirect('/');
 }
 
-// Middleware function to convert submitted username to lower case
-function usernameToLowerCase(req, res, next) {
-    req.body.username = req.body.username.toLowerCase();
-    next();
-}
-
 router.get('/', checkAuthenticated, (req, res) => {
     let locals = {
         title: 'VRT Touch - Editor',
@@ -43,7 +37,7 @@ router.get('/login', checkNotAuthenticated, (req, res) => {
     res.render('login', locals);
 });
 
-router.post('/login', checkNotAuthenticated, usernameToLowerCase, passport.authenticate('local', { 
+router.post('/login', checkNotAuthenticated, passport.authenticate('local', { 
     successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: true
@@ -75,10 +69,11 @@ router.get('/facebook', function(req, res) {
 
 router.post('/profile', checkAuthenticated, function(req, res) {
     // Find current user in the database
-    Account.findOne({ username: req.body.username }, (err, user) => {
-        if (req.user.name != req.body.name && req.body.name) {
-            console.log(user.name + " " + req.body.name);
-            user.name = req.body.name;
+    let newUsername = null;
+    Account.findOne({ username: req.user.username }, (err, user) => {
+        if (req.body.username && req.user.username != req.body.username) {
+            console.log(user.username + " " + req.body.username);
+            newUsername = req.body.username;
         };
         if (!(req.body.passwordNew1 && req.body.passwordNew2)) {
             req.body.passwordNew1 = req.body.password;
@@ -86,25 +81,64 @@ router.post('/profile', checkAuthenticated, function(req, res) {
         }
         // Check if error connecting
         if (err) {
-            res.render('profile', { user: req.user, errorMessage: 'Verbindingsfout. Probeer later opnieuw.' });
+            res.render('profile', { 
+                user: req.user, 
+                title: 'VRT Touch - Editor',
+                stylesheet: 'login.css', 
+                errorMessage: 'Verbindingsfout. Probeer later opnieuw.' });
         } else {
             // Check if user was found in database
             if (!user) {
-                res.render('profile', { user: req.user, errorMessage: 'Gebruiker onbekend.' });
+                res.render('profile', { 
+                    user: req.user, 
+                    title: 'VRT Touch - Editor',
+                    stylesheet: 'login.css', 
+                    errorMessage: 'Gebruiker onbekend.' });
             } else {
                 // Check if new passwords match
                 if (req.body.passwordNew1 != req.body.passwordNew2) {
-                    res.render('profile', { user: req.user, errorMessage: 'Paswoorden komen niet overeen.' });
+                    res.render('profile', { 
+                        user: req.user, 
+                        title: 'VRT Touch - Editor',
+                        stylesheet: 'login.css', 
+                        errorMessage: 'Paswoorden komen niet overeen.' });
                 } else {
                     user.changePassword(req.body.password, req.body.passwordNew1, function(err) {
-                        if(err) {
-                            if(err.name === 'IncorrectPasswordError'){
-                                res.render('profile', { user: req.user, errorMessage: 'Foutief paswoord.' });
-                            }else {
-                                res.render('profile', { user: req.user, errorMessage: 'Nog onbekende fout. Contacteer de administrator.' });
+                        if (err) {
+                            if (err.name === "IncorrectPasswordError") {
+                                res.render("profile", {
+                                    user: req.user,
+                                    title: "VRT Touch - Editor",
+                                    stylesheet: "login.css",
+                                    errorMessage: "Foutief paswoord.",
+                                });
+                            } else {
+                                res.render("profile", {
+                                    user: req.user,
+                                    title: "VRT Touch - Editor",
+                                    stylesheet: "login.css",
+                                    errorMessage:
+                                        "Nog onbekende fout. Contacteer de administrator.",
+                                });
                             }
                         } else {
-                            res.redirect('/');
+                            if (newUsername) {
+                                user.username = newUsername;
+                                user.save((error) => {
+                                    if (error) {
+                                        res.render("profile", {
+                                            user: req.user,
+                                            title: "VRT Touch - Editor",
+                                            stylesheet: "login.css",
+                                            errorMessage: "Foutief paswoord.",
+                                        });
+                                    } else {
+                                        res.redirect("/");
+                                    }
+                                });
+                            } else {
+                                res.redirect("/");
+                            }
                         }
                     });
                 }
