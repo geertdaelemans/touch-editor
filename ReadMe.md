@@ -25,6 +25,11 @@ Create a temporary .deploy directory. Add in this directory the file users.json 
 Role 0 is administrator, role 1 is editor.
 This file will be deleted after initialisation.
 
+### TEMPORARY WORKAROUND:
+In the db directory a roles definition file has been added: roles.js. This defines the required roles.
+Please use this file to import roles definition into MongoDB. Create a Collection with the name roles and then populate it with this file.
+You can do this via the MongoDB GUI. Logged in Jira as: TOUCH-126.
+
 ## FFPMEG installation
 Install both ffmpeg and ffprobe on the server computer. These must
 be of a version higher or equal to 0.9. (https://www.gyan.dev/ffmpeg/builds/)

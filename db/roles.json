@@ -1,0 +1,19 @@
+[{
+  "_id": {
+    "$oid": "6245c6696082d20d7daaca2c"
+  },
+  "name": "user",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6245c6696082d20d7daaca2d"
+  },
+  "name": "moderator",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6245c6696082d20d7daaca2e"
+  },
+  "name": "admin",
+  "__v": 0
+}]
