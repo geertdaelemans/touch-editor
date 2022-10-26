@@ -5,8 +5,8 @@ const path = require('path');
 const sharp = require('sharp');
 const fs = require('fs-extra');
 const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(appRoot + "/ffmpeg/ffmpeg.exe");
-ffmpeg.setFfprobePath(appRoot + "/ffmpeg/ffprobe.exe");
+//ffmpeg.setFfmpegPath(appRoot + "/ffmpeg/ffmpeg.exe");
+//ffmpeg.setFfprobePath(appRoot + "/ffmpeg/ffprobe.exe");
 const config = require('./config.json');
 const chokidar = require('chokidar');
 

@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:5.0.2
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - MONGO_INITDB_DATABASE=vrttouch
+    ports:
+      - 27017
+    volumes:
+      - db:/data/db
+
+  app:
+    depends_on:
+      - mongodb
+    build: .
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $NODE_LOCAL_PORT:3000
+    environment:
+      - SESSION_SECRET=$SESSION_SECRET
+      - DATABASE_URL=mongodb://mongodb:27017/vrttouch
+      - PORT=3000
+      - SSL=false
+      - IMPORT_FOLDER=/data/dropfolder
+      - IMPORT_TEMPLATES=/data/templates
+      - ARCHIVE_FOLDER=/data/archive
+      - TOUCHDESIGNER_URL=$TOUCHDESIGNER_URL
+      - TOUCHDESIGNER_PORT=$TOUCHDESIGNER_PORT
+      - TWITTER_CONSUMER_KEY=$TWITTER_CONSUMER_KEY
+      - TWITTER_CONSUMER_SECRET=$TWITTER_CONSUMER_SECRET
+      - TWITTER_ACCESS_TOKEN=$TWITTER_ACCESS_TOKEN
+      - TWITTER_ACCESS_TOKEN_SECRET=$TWITTER_ACCESS_TOKEN_SECRET
+    volumes:
+      - .:/usr/app
+      - /usr/app/node_modules
+      - $PATH_DROPFOLDER:/data/dropfolder
+      - $PATH_TEMPLATES:/data/templates
+      - $PATH_ARCHIVE:/data/archive
+
+volumes:
+  db:
