@@ -3456,7 +3456,7 @@ class PagesBar {
                     // Position the media such that it fills the screen and is centered
                     const scaleX = currentStatus.canvasWidth / currentStatus.media[imageName].width;
                     const scaleY = currentStatus.canvasHeight / currentStatus.media[imageName].height;
-                    const scale = Math.max(scaleX, scaleY);
+                    const scale = (Math.max(scaleX, scaleY) ? Math.max(scaleX, scaleY) : 1.0);
                     const overflowX = currentStatus.media[imageName].width * scale - currentStatus.canvasWidth;
                     const overflowY = currentStatus.media[imageName].height * scale - currentStatus.canvasHeight;
                     if (overflowX > 0) {
