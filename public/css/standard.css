@@ -948,6 +948,14 @@ iframe {
   color: black;
   background: #c27691;
 }
+#annotateSelector option[value="[VIOLET]"] {
+  color: black;
+  background: #5541f0;
+}
+#annotateSelector option[value="[TEAL]"] {
+  color: black;
+  background: #00beaa;
+}
 #annotateSelector option[value="[MULTI]"] {
   color: black;
   background: #de37f4;

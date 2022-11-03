@@ -1816,11 +1816,12 @@ function showPageInfo() {
     }
 
     // Create annotate selector
-    let annotationOptions = ["[NONE]", "[GREEN]", "[RED]", "[PINK]", "[MULTI]"];
+    let annotationOptions = ["[NONE]", "[GREEN]", "[RED]", "[PINK]", "[VIOLET]", "[TEAL]", "[MULTI]"];
     $('#annotateSelector').html('<option value="[NONE]">Geen</option>');
     $('#annotateSelector').append('<option value="[GREEN]">Groen</option>');
     $('#annotateSelector').append('<option value="[RED]">Rood</option>');
-    $('#annotateSelector').append('<option value="[PINK]">Roze</option>');
+    $('#annotateSelector').append('<option value="[VIOLET]">Violet</option>');
+    $('#annotateSelector').append('<option value="[TEAL]">Teal</option>');
     $('#annotateSelector').append('<option value="[MULTI]">Oekraïne</option>');
     $('#annotateSelector').append('<option value="[CUSTOM]">Aangepast</option>');
     if (curPage.data.annotate) {
