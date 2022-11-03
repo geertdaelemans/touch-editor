@@ -45,6 +45,25 @@ router.get('/', checkAuthenticated, async (req, res) => {
     }
 });
 
+router.get('/users', checkAuthenticated, async (req, res) => {
+    let searchOptions = {};
+    if (req.query.name != null && req.query.name !== '') {
+        searchOptions.name = new RegExp(req.query.name, 'i')
+    }
+    try {
+        const users = await Account.find(searchOptions);
+        let locals = {
+            title: 'VRT Touch - Admin',
+            users: users,
+            searchOptions: req.query,
+            name: req.user.username,
+            username: req.user.username
+        }; 
+        res.render('admin/users', locals);
+    } catch (error) {
+        res.redirect('/');
+    }
+});
 
 router.get('/register', checkAuthenticated, function(req, res) {
     let locals = {

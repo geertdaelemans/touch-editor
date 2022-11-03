@@ -1,0 +1,29 @@
+    <div id="wrapper">
+        <%- include('../partials/header.ejs') %>
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="plain">
+                    <%- include('../partials/errorMessage.ejs') %>
+                    <h2>Search Users</h2>
+                    <form action="/admin" method="GET">
+                        <label>Name</label>
+                        <input type="text" name="name" value="<%= searchOptions.name %>">
+                        <button type="submit">Search</button>
+                    </form>
+                    <br>
+                    <table>
+                        <tr>
+                            <th>Naam</th><th>E-mail</th><th>Rol</th>
+                        </tr>
+                    <% users.forEach(user => { %>
+                        <tr>
+                            <td><%= user.username %></td><td><%= user.email %></td><td><%= user.role %></td>
+                        </tr>
+                    <% }) %>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="userId" style="display: none;"><%= username %></div>
+    <script src="/js/admin.js" type="text/javascript"></script>
