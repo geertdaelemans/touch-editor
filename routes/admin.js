@@ -54,6 +54,7 @@ router.get('/users', checkAuthenticated, async (req, res) => {
     }
 });
 
+
 router.get('/register', checkAuthenticated, function(req, res) {
     let locals = {
         title: 'VRT Touch - Admin',
