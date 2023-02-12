@@ -148,8 +148,10 @@ router.post('/profile', checkAuthenticated, function(req, res) {
 });
 
 router.get('/logout', checkAuthenticated, function(req, res) {
-    req.logout();
-    res.redirect('/login');
+    req.logout(function(err) {
+        if (err) { return next(err); }
+        res.redirect('/login');
+    });
 });
 
 router.get('/help', checkAuthenticated, function(req, res) {
