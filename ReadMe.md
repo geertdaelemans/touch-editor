@@ -4,7 +4,19 @@
 Get and install a free MongoDB instance at:
 	https://www.mongodb.com/download-center/community
 
+The ipv6 mode needs to be activated for MongoDB in order to refer to localhost*. This can be done in the configuration file at:
+
+    C:\Program Files\MongoDB\Server\5.0\bin\mongod.cfg
+
+```# network interfaces
+net:
+  port: 27017
+  ipv6: true
+```
+
 Start the server (all default values are ok, no need to fill in an URL).
+
+*If not activated you can use the workaround to refer to 127.0.0.1 instead of localhost in the .ENV-file.
 
 ## Adding a default user (administrator):
 Create a temporary .deploy directory. Add in this directory the file users.json containing (example):
