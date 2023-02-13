@@ -1,4 +1,6 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+
+mongoose.set("strictQuery", false);
 
 mongoose
     .connect(process.env.DATABASE_URL, { 
@@ -7,8 +9,8 @@ mongoose
     })
     .catch(e => {
         console.error('Connection error', e.message)
-    })
+    });
 
-const db = mongoose.connection
+const db = mongoose.connection;
 
-module.exports = db
+module.exports = db;
