@@ -135,9 +135,15 @@ const deleteUsers = (path) => {
 initMongoose();
 
 // Set-up web server
-var app = express();
-//app.use(express.static('public/client'));
+const app = express();
 app.use(express.static('public'));
+
+// Catch the admin calls and avoid that Express starts to serve them. Instead
+// send the calls to the static React module
+app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(__dirname + '/public/admin/index.html'));
+});
+
 app.use(fileUpload());
 app.set('view-engine', 'ejs');
 app.use(express.urlencoded({ extended: false }))
