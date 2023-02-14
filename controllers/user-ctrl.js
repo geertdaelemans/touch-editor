@@ -200,6 +200,10 @@ updateUser = (req, res) => {
             user.email = body.email;
         }
         if (body.roles) {
+
+            // Legacy code to get the correct role number 0 or 1
+            user.role = '1';
+            
             await Role.find(
                 {
                     name: { $in: body.roles }
@@ -209,6 +213,12 @@ updateUser = (req, res) => {
                         return res.status(500).send({ message: error });
                     }
                     user.roles = roles.map(role => role._id);
+
+                    // Legacy code to get the correct role number 0 or 1
+                    if (roles.map(role => role.name).includes('admin')) {
+                        user.role = '0';
+                    }
+
                 })
                 .clone()
                 .catch(error => {
@@ -266,10 +276,14 @@ cleanUp = async (req, res) => {
             }
             for (let i in users) {
                 let updated = false;
+
+                // Legacy code - based upon users role number, an array of roles if filled.
                 if (!users[i].roles.length) {
                     const newRoles = (users[i].role == '0' ? [rolesArray['user'], rolesArray['admin']] : rolesArray['user']);
                     users[i].roles = newRoles;
+                    updated = true;
                 }
+                
                 if (!users[i].email) {
                     users[i].email = users[i].username;
                     users[i].username = users[i].name;
