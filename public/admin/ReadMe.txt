@@ -1,0 +1,1 @@
+This directory should contain a build version of the REACT client, see /client.

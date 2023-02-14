@@ -18,6 +18,9 @@ config.json
 /public/dropfolder/*
 !/public/dropfolder/ReadMe.txt
 
+/public/admin/*
+!/public/admin/ReadMe.txt
+
 /touchdesigner/TDImportCache
 /touchdesigner/Backup
 /touchdesigner/data/*
