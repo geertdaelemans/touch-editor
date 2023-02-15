@@ -184,7 +184,7 @@ app.use(auth.initialize());
 
 
 app.use('/', indexRouter);
-app.use('/admin', userRouter);
+app.use('/remote', userRouter);
 app.use('/api', projectRouter);
 
 // Upload media file to presentation folder

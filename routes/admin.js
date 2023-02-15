@@ -85,8 +85,8 @@ router.post('/register', checkAuthenticated, async function(req, res) {
             return res.render('admin/new', locals);
         }
         passport.authenticate('local', { 
-            successRedirect: '/admin',
-            failureRedirect: '/admin/register',
+            successRedirect: '/remote',
+            failureRedirect: '/remote/register',
             failureFlash: true
         }) (req, res, function () {
             res.redirect('/');
@@ -99,6 +99,14 @@ router.get('/sessions', checkAuthenticated, function(req, res) {
         title: 'VRT Touch - Admin',
     };
     res.render('admin/sessions', locals);    
+});
+
+router.get('/beta', checkAuthenticated, function(req, res) {
+    let locals = {
+        title: 'VRT Touch - Beta',
+        username: req.user.username,
+    };
+    res.render('admin/beta', locals);    
 });
 
 router.get('/controller', checkAuthenticated, function(req, res) {

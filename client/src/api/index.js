@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const link = `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}/api`;
+const link = process.env.REACT_APP_API_URL;
 const api = axios.create({
     baseURL: link
 });

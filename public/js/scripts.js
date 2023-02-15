@@ -1034,7 +1034,7 @@ function switchToTab(tab) {
     } else if (tab == 'help') {
         window.open('/help','_blank');
     } else if (tab === "remote") {
-        window.open("/admin", "_blank");
+        window.open("/remote", "_blank");
     } else if (tab != currentTab) {
         let previousTab = currentTab;
         currentTab = tab;
