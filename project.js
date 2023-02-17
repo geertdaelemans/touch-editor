@@ -7,7 +7,8 @@ const fs = require('fs-extra');
 const ffmpeg = require('fluent-ffmpeg');
 //ffmpeg.setFfmpegPath(appRoot + "/ffmpeg/ffmpeg.exe");
 //ffmpeg.setFfprobePath(appRoot + "/ffmpeg/ffprobe.exe");
-const config = require('./config.json');
+//const config = require('./config.json');
+const config = JSON.parse(process.env.SYNC_TARGETS);
 const chokidar = require('chokidar');
 
 const WORKING_DIRECTORY = appRoot + "/public";

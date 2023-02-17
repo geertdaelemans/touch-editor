@@ -35,7 +35,7 @@
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^6.0.1",
     "request": "^2.88.2",
-    "sharp": "^0.25.3",
+    "sharp": "^0.31.3",
     "socket.io": "^4.4.1",
     "twit": "^2.2.11",
     "util": "^0.12.2",
