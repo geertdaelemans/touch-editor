@@ -24,7 +24,8 @@ router.get('/', checkAuthenticated, (req, res) => {
         title: 'VRT Touch - Editor',
         name: req.user.name,
         role: req.user.role,
-        username: req.user.username
+        username: req.user.username,
+        email: req.user.email,
     };
     res.render('index', locals);
 });

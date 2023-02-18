@@ -242,7 +242,7 @@ class Projects {
     createButton(name, projectsData) {
         let subSectionSelector = 'projects';
         let projectSelector = `project_${name.split(' ').join('_')}`;
-        if (projectsData[name].owner == userName) {
+        if (projectsData[name].owner == userEmail) {
             subSectionSelector = 'privateProjects';
         }
         let projectScreenShot;
@@ -354,7 +354,7 @@ class Projects {
             // In the meantime collect array of updated buttons for later use
             let updatedButtonArray = [];
             for (let projectName in update) {
-                if (update[projectName].owner && update[projectName].owner != userName) {
+                if (update[projectName].owner && update[projectName].owner != userEmail) {
                     delete update[projectName];
                 } else {
                     updatedButtonArray.push(projectName);
@@ -469,6 +469,7 @@ const canvas = new Canvas('canvas');
 
 let shapes = [];
 let userName = '';
+let userEmail = '';
 let pagePrepared = false;
 let moving = false;
 let refX, refY = null;
@@ -781,9 +782,11 @@ $(function() {
 
     // Identify user
     userName = $('#userId').text();
+    userEmail = $('#userEmail').text();
     console.log('Identified... after finished page.');
     let idCard = {
-        name: userName   
+        name: userName,
+        email: userEmail,   
     }
     if (currentStatus.projectName) {
         idCard.project = currentStatus.projectName;
@@ -1017,8 +1020,8 @@ function switchToTab(tab) {
                     currentStatus.transitionAudio = settings.transitionAudio;
                     // Handle the private checkbox
                     if ($('#private').is(':checked')) {
-                        settings.owner = userName;
-                        currentStatus.owner = userName;
+                        settings.owner = userEmail;
+                        currentStatus.owner = userEmail;
                     } else {
                         currentStatus.owner = '';
                     }
@@ -3640,7 +3643,8 @@ socket.on('whoAreYou', function() {
     if (pagePrepared) {
         console.log('Identified after whoAreYou');
         let idCard = {
-            name: userName   
+            name: userName,
+            email: userEmail,   
         }
         if (currentStatus.projectName) {
             idCard.project = currentStatus.projectName;
