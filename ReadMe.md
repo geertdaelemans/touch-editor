@@ -54,6 +54,7 @@ Create an .env-file (no extension) containing following parameters:
 
 ```
 SESSION_SECRET={the secret to hash passwords}
+SESSION_MAX_AGE={session timeout in milliseconds}
 DATABASE_URL={link to MongoDB database, example: mongodb://localhost/vrttouch}
 PORT={server port: 3000}
 SSL=true|false

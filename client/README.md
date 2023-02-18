@@ -73,7 +73,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 Create an .env-file (no extension) containing following parameters:
 
 ```
-REACT_APP_API_URL=http://ocbweb01021.vrt.be:3000/api
+REACT_APP_SERVER_URL=http://ocbweb01021.vrt.be:3000
 ```
 
 ## Non-Sucking Service Manager

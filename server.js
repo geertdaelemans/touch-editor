@@ -151,8 +151,12 @@ app.use(flash())
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
-}))
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        maxAge: parseInt(process.env.SESSION_MAX_AGE),
+    }
+}));
 app.use(passport.initialize())
 app.use(passport.session())
 

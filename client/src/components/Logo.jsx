@@ -9,7 +9,7 @@ const Wrapper = styled.a.attrs({
 
 class Logo extends Component {
     render() {
-        const link = `http://localhost:3000`;
+        const link = process.env.REACT_APP_SERVER_URL;
         return (
             <Wrapper href={link}>
                 <img src={logo} height="25" alt="VRT Touch" />
