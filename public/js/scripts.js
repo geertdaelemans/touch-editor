@@ -1853,6 +1853,23 @@ function createImageSelector(selectorName, target, templateTarget = null) {
     });
 }
 
+function updateAssetDropdown(active = null) {
+    // Repopulate Asset list
+    $('#assets').html('<option value="_page">Pagina</option>');
+    $('#assets').append('<option disabled selected value>Assets</option>');
+    for (let assetId in curPage.data.asset) {
+        let assetContent = curPage.data.asset[assetId];
+        let assetName = (assetContent.id ? assetContent.id : assetId);
+        // Add asset to select
+        if (active == assetName) {
+            $('#assets').append(`<option value="${assetId}" selected>${assetName}</option>`);
+        } else {
+            $('#assets').append(`<option value="${assetId}">${assetName}</option>`);    
+        }        
+    }
+    $('#assets').append('<option value="_new">[Voeg asset toe]</option>'); 
+}
+
 // Display page information in sidebar
 function showPageInfo() {
     createImageSelector('background', curPage.data);
@@ -1915,15 +1932,7 @@ function showPageInfo() {
     createPageSelector('click', curPage.data);
 
     // Repopulate Asset list
-    $('#assets').html('<option disabled selected value>Selecteer asset</option>');
-    for (let assetId in curPage.data.asset) {
-        let assetContent = curPage.data.asset[assetId];
-        let assetName = (assetContent.id ? assetContent.id : assetId);
-        // Add asset to select
-        $('#assets').append(`<option value="${assetId}">${assetName}</option>`);
-    }
-    $('#assets').append('<option value="new">[Voeg asset toe]</option>'); 
-
+    updateAssetDropdown();
     // Clear all listeners
     $('#id').off();
     $('#html').off();
@@ -1989,7 +1998,7 @@ function showPageInfo() {
     });
     $('#assets').on('change', function() {
         let assetId = $(this).val();
-        if(assetId == 'new') {
+        if(assetId == '_new') {
 
             // When no assets are present, add a first one
             let newAssetId = 0;
@@ -1998,6 +2007,15 @@ function showPageInfo() {
             } else {
                 newAssetId = curPage.data.asset.length;
             }
+
+            // Find maximum layer
+            let layerMax = 0;
+            for (let i = 0; i < curPage.data.asset.length; i++) {
+                if (parseInt(curPage.data.asset[i].layer) > layerMax) {
+                    layerMax = parseInt(curPage.data.asset[i].layer);
+                }
+            }
+            layerMax++;
             
             // Add default asset information 
             curPage.data.asset[newAssetId] = {
@@ -2007,7 +2025,7 @@ function showPageInfo() {
                 ypos: 0,
                 scale: 1,
                 url: -1, 
-                layer: curPage.data.asset.length,
+                layer: layerMax,
             };
             curPage.updated = true;
 
@@ -2016,6 +2034,9 @@ function showPageInfo() {
             // TODO: here a refreshAsset does not work when the background is a movie... strange...
             drawPage();
             showAssetInfo(assetId, curPage.data.asset[assetId]);
+            updateAssetDropdown();
+        } else if (assetId == '_page') {
+            showSubSection('pagina');
         } else {
             refreshAsset(assetId);
         }
@@ -2289,6 +2310,7 @@ function showAssetInfo(assetId, asset) {
         const newId = $(this).val();
         curPage.data.asset[assetId].id = newId;
         curPage.updated = true;
+        updateAssetDropdown(newId);
     });
     $('#xpos').on('change keyup', function() {
         const newXpos = $(this).val();

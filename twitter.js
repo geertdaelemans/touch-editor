@@ -9,6 +9,7 @@ const { TwitterApi } = require('twitter-api-v2');
 const request = require('request');
 const path = require('path');
 const fs = require('fs-extra');
+const util = require('util');
 
 class Twitter {
     constructor() {
@@ -53,7 +54,11 @@ class Twitter {
             accessSecret:           process.env.TWITTER_ACCESS_TOKEN_SECRET
          });
         // Obtain app-only client
-        Twitter.client = await consumerClient.appLogin();
+        try {
+            Twitter.client = await consumerClient.appLogin();            
+        } catch (error) {
+            util.log('Twitter connection error:', error.message);
+        }
     }
 
     // List all available media and stores the file names in an array
