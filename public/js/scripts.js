@@ -1159,6 +1159,9 @@ function setupCanvas() {
             $('#assetInfo').hide();
             $('#videoControl').hide();
         }
+  
+        // Sort the shapes according to display order
+        shapes.sort(GetSortOrder('layer', false));
 
         // Iterate each shape in the shapes array
         for (let i in shapes) {
@@ -2400,7 +2403,6 @@ class Photo {
                     layer: this.order,
                 }
                 shapes[this.name] = this.shape;
-                shapes.sort(GetSortOrder('layer', false));
             }
             this.draw();
         }
@@ -2665,7 +2667,6 @@ class Video {
                 layer: this.order,
             }
             shapes[this.name] = this.shape;
-            shapes.sort(GetSortOrder('layer', false));
         }
         this.draw();
     }
