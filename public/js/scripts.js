@@ -27,20 +27,35 @@ const RESOLUTION_OPTIONS = {
 const network = new Network();
 
 // Sort function, used for sorting layers
-function GetSortOrder(prop) {
+function GetSortOrder(prop, up = true) {
     return function(a, b) {
-        if (a === null) {
-            return -1;
+        if (up) {
+            if (a === null) {
+                return -1;
+            }
+            if (b === null) {
+                return 1;
+            }
+            if (parseInt(a[prop]) > parseInt(b[prop])) {
+                return 1;
+            } else if (parseInt(a[prop]) < parseInt(b[prop])) {
+                return -1;
+            }
+            return 0;
+        } else {
+            if (a === null) {
+                return 1;
+            }
+            if (b === null) {
+                return -1;
+            }
+            if (parseInt(a[prop]) > parseInt(b[prop])) {
+                return -1;
+            } else if (parseInt(a[prop]) < parseInt(b[prop])) {
+                return 1;
+            }
+            return 0;           
         }
-        if (b === null) {
-            return 1;
-        }
-        if (parseInt(a[prop]) > parseInt(b[prop])) {
-            return 1;
-        } else if (parseInt(a[prop]) < parseInt(b[prop])) {
-            return -1;
-        }
-        return 0;
     }
 }
 
@@ -327,7 +342,7 @@ class Projects {
             });
         });
 
-        // Handle right click on project button
+        // Handle right-click on project button
         $(`#${projectSelector}`).on('contextmenu', function(event) {
             event.preventDefault();
             popUpMessage({
@@ -1151,10 +1166,18 @@ function setupCanvas() {
             if (defineShape(shape)) {
                 // Test if the mouse is in the current shape
                 if (canvas.context.isPointInPath(mouseX, mouseY)) {
+                    // Get the selected layer
+                    let selectedLayer;
+                    for (let k = 0; k < curPage.layers.length; k++) {
+                        if (curPage.layers[k] && curPage.layers[k].name == shapes[i].name) {
+                            selectedLayer = curPage.layers[k];
+                            break;
+                        }                        
+                    }
                     // When left-click detected...
                     if (event.button == 0) {
                         // When in 'edit' mode, start asset movement
-                        if (curPage.activeAsset == i) {
+                        if (curPage.activeAsset == selectedLayer.name) {
                             if (!moving) {
                                 moving = true;
                                 refX = mouseX;
@@ -1164,42 +1187,42 @@ function setupCanvas() {
                             clickedOnAsset = true;
                         // When not in 'edit' mode, follow the presentation
                         } else if(!curPage.activeAsset) {
-                            if (curPage.layers[parseInt(i) + 1].type == 'video') {
-                                if (curPage.layers[parseInt(i) + 1].loop) {
-                                    switchPage(curPage.data.asset[i].url);
-                                } else if (curPage.layers[parseInt(i) + 1].isPaused()) {
-                                    if (curPage.layers[parseInt(i) + 1].keyFrames.next() == -1) {
-                                        switchPage(curPage.data.asset[i].url);
+                            if (selectedLayer.type == 'video') {
+                                if (selectedLayer.loop) {
+                                    switchPage(curPage.data.asset[parseInt(selectedLayer.name)].url);
+                                } else if (selectedLayer.isPaused()) {
+                                    if (selectedLayer.keyFrames.next() == -1) {
+                                        switchPage(curPage.data.asset[parseInt(selectedLayer.name)].url);
                                     } else {
-                                        history.addKeyframeToHistory(curPage.index, parseInt(i), curPage.layers[parseInt(i) + 1].getCurrentTime());
-                                        curPage.layers[parseInt(i) + 1].play();
+                                        history.addKeyframeToHistory(curPage.index, parseInt(selectedLayer.name), selectedLayer.getCurrentTime());
+                                        selectedLayer.play();
                                     }
                                 } else {
-                                    curPage.layers[parseInt(i) + 1].jumpTo(curPage.layers[parseInt(i) + 1].keyFrames.next());
-                                    if (curPage.layers[parseInt(i) + 1].keyFrames.next() == -1) {
-                                        switchPage(curPage.data.asset[i].url);
+                                    selectedLayer.jumpTo(selectedLayer.keyFrames.next());
+                                    if (selectedLayer.keyFrames.next() == -1) {
+                                        switchPage(curPage.data.asset[parseInt(selectedLayer.name)].url);
                                     } else {
-                                        history.addKeyframeToHistory(curPage.index, parseInt(i), curPage.layers[parseInt(i) + 1].getCurrentTime());
-                                        curPage.layers[parseInt(i) + 1].play();
+                                        history.addKeyframeToHistory(curPage.index, parseInt(selectedLayer.name), selectedLayer.getCurrentTime());
+                                        selectedLayer.play();
                                     }
                                 }
                             } else {
-                                switchPage(curPage.data.asset[i].url);
+                                switchPage(curPage.data.asset[parseInt(selectedLayer.name)].url);
                             }
                             clickedOnAsset = true;
                         }
                     // When right-click dectected, draw border around asset
                     } else if (event.button == 2) {
-                        if (curPage.activeAsset != i) {
-                            if (curPage.layers[parseInt(i) + 1].type == 'video') {
-                                curPage.layers[parseInt(i) + 1].editing = true;
-                            }                            
-                            refreshAsset(i);
+                        if (curPage.activeAsset != selectedLayer.name) {
+                            if (selectedLayer.type == 'video') {
+                                selectedLayer.editing = true;
+                            }
+                            refreshAsset(selectedLayer.name);
                             toggleRightBar(true);
                             this.style.cursor = 'grab';
                         } else {
-                            if (curPage.activeAsset && curPage.layers[parseInt(curPage.activeAsset) + 1].type == 'video') {
-                                curPage.layers[parseInt(curPage.activeAsset) + 1].editing = false;
+                            if (curPage.activeAsset && selectedLayer.type == 'video') {
+                                selectedLayer.editing = false;
                             }
                             curPage.activeAsset = null;
                             canvas.context.beginPath(); // Clear active region
@@ -1250,8 +1273,8 @@ function setupCanvas() {
 
         // When in 'asset moving' mode, process the actual move
         if (moving) {
-            let newX = Number(curPage.data.asset[curPage.activeAsset].xpos) + Number((mouseX - refX) / canvas.scale);
-            let newY = Number(curPage.data.asset[curPage.activeAsset].ypos) - Number((mouseY - refY) / canvas.scale);
+            let newX = Math.round(Number(curPage.data.asset[curPage.activeAsset].xpos) + Number((mouseX - refX) / canvas.scale));
+            let newY = Math.round(Number(curPage.data.asset[curPage.activeAsset].ypos) - Number((mouseY - refY) / canvas.scale));
             curPage.data.asset[curPage.activeAsset].xpos = newX;
             curPage.data.asset[curPage.activeAsset].ypos = newY;
             curPage.updated = true;
@@ -2373,9 +2396,11 @@ class Photo {
                         { x: (this.xScaled + this.widthScaled), y: this.yScaled },
                         { x: (this.xScaled + this.widthScaled), y: (this.yScaled + this.heightScaled) },
                         { x: this.xScaled, y: (this.yScaled + this.heightScaled) }
-                    ]
+                    ],
+                    layer: this.order,
                 }
                 shapes[this.name] = this.shape;
+                shapes.sort(GetSortOrder('layer', false));
             }
             this.draw();
         }
@@ -2636,9 +2661,11 @@ class Video {
                     { x: (this.xScaled + this.widthScaled), y: this.yScaled },
                     { x: (this.xScaled + this.widthScaled), y: (this.yScaled + this.heightScaled) },
                     { x: this.xScaled, y: (this.yScaled + this.heightScaled) }
-                ]
+                ],
+                layer: this.order,
             }
             shapes[this.name] = this.shape;
+            shapes.sort(GetSortOrder('layer', false));
         }
         this.draw();
     }
@@ -3177,8 +3204,8 @@ function refreshAsset(assetId) {
         curPage.activeAsset = assetId;
         showAssetInfo(assetId, assetContent);
 
+        // Sort all layers in order of visibility
         curPage.layers.sort(GetSortOrder("order"));
-        console.log(curPage.layers);
     }
 }
 
