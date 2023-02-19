@@ -26,6 +26,24 @@ const RESOLUTION_OPTIONS = {
 
 const network = new Network();
 
+// Sort function, used for sorting layers
+function GetSortOrder(prop) {
+    return function(a, b) {
+        if (a === null) {
+            return -1;
+        }
+        if (b === null) {
+            return 1;
+        }
+        if (parseInt(a[prop]) > parseInt(b[prop])) {
+            return 1;
+        } else if (parseInt(a[prop]) < parseInt(b[prop])) {
+            return -1;
+        }
+        return 0;
+    }
+}
+
 class Page {
     constructor() {
         this._index = null;
@@ -160,6 +178,8 @@ class Page {
                         delete this.data.asset[i].keyframes;
                     }
                 }
+                // Sort all layers according to the layer number
+                this.data.asset.sort(GetSortOrder("layer"));
             }
             if (this.data.annotate == '' || this.data.annotate == '[NONE]') {
                 delete this.data.annotate;
@@ -1960,7 +1980,8 @@ function showPageInfo() {
                 xpos: 0,
                 ypos: 0,
                 scale: 1,
-                url: -1
+                url: -1, 
+                layer: curPage.data.asset.length,
             };
             curPage.updated = true;
 
@@ -2238,7 +2259,7 @@ function showAssetInfo(assetId, asset) {
         drawPage();
         showPageInfo();     
     });   
-    $('#assetId').on('change', function(event) {
+    $('#assetId').on('change keyup', function(event) {
         const newId = $(this).val();
         curPage.data.asset[assetId].id = newId;
         curPage.updated = true;
@@ -2298,7 +2319,7 @@ function showAssetInfo(assetId, asset) {
 }
 
 class Photo {
-    constructor(source, x, y, scale, name) {
+    constructor(source, x, y, scale, name, order = 0) {
         this.x = x;
         this.y = y;
         this.scale = scale;
@@ -2320,6 +2341,8 @@ class Photo {
         this.type = "photo";
         this.clickable = true;
         this.fit = false;
+
+        this.order = parseInt(order);
     }
     draw() {
   	    if (this.isLoaded) {
@@ -2360,7 +2383,7 @@ class Photo {
 }
 
 class Video {
-    constructor(source, x, y, scale, name = null) {
+    constructor(source, x, y, scale, order = 0, name = null) {
         this.source = source;
         this.x = x;
         this.y = y;
@@ -2383,6 +2406,8 @@ class Video {
         this.clickable = true;
 
         this._editMode = false;
+
+        this.order = parseInt(order);
     }
     // Setters and getters
     set name(value) {
@@ -3003,12 +3028,12 @@ function drawPage() {
                     $(this).css("width", widthCanvas);
                     $(this).css("height", heightCanvas);
                     const scaleBackground = currentStatus.canvasWidth / widthCanvas;
-                    curPage.layers[0] = new Video(this, xPosCanvas, yPosCanvas, scaleBackground);
+                    curPage.layers[0] = new Video(this, xPosCanvas, yPosCanvas, scaleBackground, -1);
                     curPage.layers[0].loop = true;
                     curPage.layers[0].clickable = false;
                 });
             } else {
-                curPage.layers[0] = new Photo(backgroundUrl, 0, 0, 1.0, 'back');
+                curPage.layers[0] = new Photo(backgroundUrl, 0, 0, 1.0, 'back', -1);
                 curPage.layers[0].clickable = false;
                 curPage.layers[0].fit = true;
             }
@@ -3039,15 +3064,16 @@ function drawPage() {
             let xpos = assetContent.xpos;
             let ypos = assetContent.ypos;
             let assetScale = (assetContent.scale ? assetContent.scale : 1.0);
-            let name = i;
+            let assetId = i;
+            let name = assetContent.id;
 
             if (imageValid && isVideo(assetContent.img)) {
                 let videoFile = currentStatus.presentationFolder + currentStatus.projectName + '/' + assetContent.img
-                $('html').append(`<video id="video_${name}" src="${videoFile}" controls="false" autoplay="true" loop="false"></video>`);
-                $(`#video_${name}`).hide();
-                $(`#video_${name}`).off();
-                $(`#video_${name}`).on('loadedmetadata', function() {
-                    let vid = new Video(this, xpos, ypos, assetScale, name);
+                $('html').append(`<video id="video_${assetId}" src="${videoFile}" controls="false" autoplay="true" loop="false"></video>`);
+                $(`#video_${assetId}`).hide();
+                $(`#video_${assetId}`).off();
+                $(`#video_${assetId}`).on('loadedmetadata', function() {
+                    let vid = new Video(this, xpos, ypos, assetScale, assetContent.layer, assetId);
                     if (assetContent.keyframes) {
                         vid.setKeyFrames(assetContent.keyframes);
                     } else {
@@ -3062,20 +3088,20 @@ function drawPage() {
                     vid.pause();
                     vid.jumpTo(vid.keyFrames.first());
                     vid.play();
-                    curPage.layers[parseInt(name) + 1] = vid;
+                    curPage.layers[parseInt(assetId) + 1] = vid;
                     // When video asset is active, automatically show the video control window
-                    if (name == curPage.activeAsset) {
+                    if (assetId == curPage.activeAsset) {
                         displayVideoControl(assetContent.keyframes);
                         $('#videoControl').show();
                     }
                 });
-                $(`#video_${name}`).on('pause', function() {
+                $(`#video_${assetId}`).on('pause', function() {
                     $('#playPauseButton').removeClass('fa-pause');
                     $('#playPauseButton').addClass('fa-play');             
                 $('#playPauseButton').addClass('fa-play');             
                     $('#playPauseButton').addClass('fa-play');             
                 });
-                $(`#video_${name}`).on('play', function() {
+                $(`#video_${assetId}`).on('play', function() {
                     $('#playPauseButton').removeClass('fa-play');
                     $('#playPauseButton').addClass('fa-pause');               
                 $('#playPauseButton').addClass('fa-pause');               
@@ -3093,8 +3119,8 @@ function drawPage() {
                 } else {
                     imagePath = NO_MEDIA_IMAGE;
                 }
-                let image = new Photo(imagePath, xpos, ypos, assetScale, name);
-                curPage.layers[parseInt(name) + 1] = image;
+                let image = new Photo(imagePath, xpos, ypos, assetScale, assetId, assetContent.layer);
+                curPage.layers[parseInt(assetId) + 1] = image;
             }
         }
     } else {
@@ -3129,7 +3155,7 @@ function refreshAsset(assetId) {
 
         // In case a new asset was just added
         if (assetId >= curPage.layers.length - 1) {
-            let image = new Photo(NO_MEDIA_IMAGE, 0, 0, 1.0, assetId);
+            let image = new Photo(NO_MEDIA_IMAGE, 0, 0, 1.0, assetId, assetContent.layer);
             curPage.layers.push(image);
         }
 
@@ -3138,6 +3164,7 @@ function refreshAsset(assetId) {
             if(curPage.layers[i].name == assetId) {
                 curPage.layers[i].x = assetContent.xpos;
                 curPage.layers[i].y = assetContent.ypos;
+                curPage.layers[i].order = parseInt(assetContent.layer);
                 if (assetContent.scale) {
                     curPage.layers[i].scale = assetContent.scale;
                 }
@@ -3149,6 +3176,9 @@ function refreshAsset(assetId) {
 
         curPage.activeAsset = assetId;
         showAssetInfo(assetId, assetContent);
+
+        curPage.layers.sort(GetSortOrder("order"));
+        console.log(curPage.layers);
     }
 }
 
