@@ -2265,6 +2265,7 @@ function showAssetInfo(assetId, asset) {
         $('#transition').val(asset.transition ? asset.transition : 'none');
         $('#keyframes').val(asset.keyframes ? asset.keyframes : '');
         $('#loop').prop('checked', asset.loop == 'once' ? false : true);
+        $('#auto').prop('checked', asset.auto == 'true' ? true : false);
         if (isVideo(asset.img)) {
             $('#keyframesContainer').show();
             $('#loopContainer').show();
@@ -2285,6 +2286,7 @@ function showAssetInfo(assetId, asset) {
         $('#transition').val('none');
         $('#keyframes').val('');
         $('#loop').prop('checked', false);
+        $('#auto').prop('checked', false);
     }
 
     // Clear all listeners
@@ -2298,6 +2300,7 @@ function showAssetInfo(assetId, asset) {
     $('#transition').off();
     $('#keyframes').off();
     $('#loop').off();
+    $('#auto').off();
 
     // Activate all listeners
     $('#deleteAsset').on('click', function() {
@@ -2358,6 +2361,11 @@ function showAssetInfo(assetId, asset) {
     $('#loop').on('change', function() {
         const state = $(this).is(':checked');
         curPage.data.asset[assetId].loop = (state ? '' : 'once');
+        curPage.updated = true;        
+    });
+    $('#auto').on('change', function() {
+        const state = $(this).is(':checked');
+        curPage.data.asset[assetId].auto = (state ? 'true' : '');
         curPage.updated = true;        
     });
 
