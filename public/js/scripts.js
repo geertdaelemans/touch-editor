@@ -2465,6 +2465,9 @@ class Video {
         this._editMode = false;
 
         this.order = parseInt(order);
+
+        this._autoNext = false;
+        this._url = '';
     }
     // Setters and getters
     set name(value) {
@@ -2499,6 +2502,18 @@ class Video {
     }
     get editing() {
         return this._editMode;
+    }
+    set autoNext(value) {        
+        this._autoNext = value;
+    }
+    get autoNext() {
+        return this._autoNext;
+    }
+    set url(value) {        
+        this._url = value;
+    }
+    get url() {
+        return this._url;
     }
     // Set the keyframes, converting them from a string
     setKeyFrames(keyFramesString) {
@@ -2673,8 +2688,13 @@ class Video {
                 this.jumpTo(this.keyFrames.previous());
                 this.play();
             } else {
-                this.pause();
-                this.jumpTo(this.nextKeyFrame);
+                // Check if automatic next is active
+                if (this.autoNext && this.keyFrames.next() == -1 && !this.editing) {
+                    switchPage(this.url);                    
+                } else {
+                    this.pause();
+                    this.jumpTo(this.nextKeyFrame);
+                }
             }
         }
         $(this).css("width", this.widthScaled);
@@ -3132,6 +3152,10 @@ function drawPage() {
                 $(`#video_${assetId}`).off();
                 $(`#video_${assetId}`).on('loadedmetadata', function() {
                     let vid = new Video(this, xpos, ypos, assetScale, assetContent.layer, assetId);
+                    if (assetContent.auto) {
+                        vid.autoNext = true;
+                        vid.url = assetContent.url;
+                    }
                     if (assetContent.keyframes) {
                         vid.setKeyFrames(assetContent.keyframes);
                     } else {
