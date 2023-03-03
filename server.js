@@ -49,8 +49,8 @@ const flash = require('express-flash')
 const session = require('express-session')
 const methodOverride = require('method-override')
 const config = require('./config.json');
-const bodyParser = require('body-parser');
 const cors = require('cors');
+const MongoStore = require('connect-mongo');
 
 // Configure passport
 const initializePassport = require('./passport-config')
@@ -60,8 +60,6 @@ initializePassport(passport)
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/admin');
 const projectRouter = require('./routes/project-router');
-
-const mongoose = require('mongoose')
 
 global.appRoot = path.resolve(__dirname);
 
@@ -152,8 +150,15 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        client: db.getClient(),
+        ttl: parseInt(process.env.SESSION_MAX_AGE) / 1000,
+        autoRemove: 'native',
+    }),
     cookie: {
         httpOnly: true,
+        sameSite: true,
+        secure: process.env.NODE_ENV === 'production',
         maxAge: parseInt(process.env.SESSION_MAX_AGE),
     }
 }));
@@ -179,9 +184,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('layout', 'layouts/layout');
 app.use(expressLayouts);
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 const auth = require("./controllers/auth.js")();
 app.use(auth.initialize());
