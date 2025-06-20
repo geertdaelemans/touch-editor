@@ -1,5 +1,5 @@
-# VRT Touch - Editor
-In this repository, you can find the source code of the VRT Touch Editor component.
+# Touch - Editor
+In this repository, you can find the source code of the Touch Editor component.
 
 ## Installation with docker
 ## Adding a default user (administrator):
@@ -12,7 +12,7 @@ Create a temporary .deploy directory. Add in this directory the file users.json 
             "username": "admin@vrt.be",
             "name": "Administrator",
             "role": 0,
-            "password": "test"
+            "password": "<secret password>"
         }
     ]
 }
@@ -54,12 +54,12 @@ In a separate config.json file you can list all synchronisation targets:
 {
     "syncTargets": {
         "Infostudio": { 
-            "dataPath": "\\\\d25622\\vrt-touch-data",
+            "dataPath": "\\\\d25622\\touch-data",
             "url": "d25622",
             "port": 9980
         },
         "Webstudio": {
-            "dataPath": "\\\\d25623\\vrt-touch-data",
+            "dataPath": "\\\\d25623\\touch-data",
             "url": "d25623",
             "port": 9980
         }
